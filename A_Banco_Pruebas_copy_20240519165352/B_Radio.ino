@@ -1,59 +1,10 @@
-/*
- * See documentation at https://nRF24.github.io/RF24
- * See License information at root directory of this library
- * Author: Brendan Doherty (2bndy5)
- */
-
-#include <SPI.h>
-#include "printf.h"
-#include "RF24.h"
-
-//Libreria del servomotor
-#include <Servo.h>
-
-#define CE_PIN 7
-#define CSN_PIN 8
-// instantiate an object for the nRF24L01 transceiver
-RF24 radio(CE_PIN, CSN_PIN);
-
-// an identifying device destination
-// Let these addresses be used for the pair
-uint8_t address[][6] = { "1Node", "2Node" };
-// It is very helpful to think of an address as a path instead of as
-// an identifying device destination
-// to use different addresses on a pair of radios, we need a variable to
-
-// uniquely identify which address this radio will use to transmit
-bool radioNumber = 1;  // 0 uses address[0] to transmit, 1 uses address[1] to transmit
-
-// Used to control whether this node is sending or receiving
-bool role = false;  // true = TX role, false = RX role
-
-// For this example, we'll be using a payload containing
-// a string & an integer number that will be incremented
-// on every successful transmission.
-// Make a data structure to store the entire payload of different datatypes
-struct PayloadStruct {
-  char message[15];  // only using 6 characters for TX & ACK payloads
-  uint8_t counter;
-};
-PayloadStruct payload;
-
-//Cosas del servoMotor
-Servo myservo;
-int pos = 0;
-
-void setup() {
-
-  Serial.begin(115200);
-  while (!Serial) {
-    // some boards need to wait to ensure access to serial over USB
-  }
-
-  // initialize the transceiver on the SPI bus
+void radio_Setup(){
+  
   if (!radio.begin()) {
-    Serial.println(F("radio hardware is not responding!!"));
+    Serial.println(F("Radio hardware is not responding!!"));
     while (1) {}  // hold in infinite loop
+  }else{
+    Serial.println(F("Radio activado."));
   }
 
   // print example's introductory prompt
@@ -105,20 +56,11 @@ void setup() {
 
     radio.startListening();  // put radio in RX mode
   }
-
-  //Setup del servoMotor
-  myservo.attach(9);
-  myservo.write(pos); //Muevo el motor al punto de inicio
-
-  // For debugging info
-  // printf_begin();             // needed only once for printing details
-  // radio.printDetails();       // (smaller) function that prints raw register values
-  // radio.printPrettyDetails(); // (larger) function that prints human readable data
 }
 
-void loop() {
+void radioCommunication(){
 
-  if (role) {
+    if (role) {
     // This device is a TX node
 
     char inputString[10]; // Creamos un array para almacenar el mensaje recibido
@@ -192,38 +134,23 @@ void loop() {
       Serial.print(payload.message);    // print outgoing message
       Serial.println(payload.counter);  // print outgoing counter
 
-
-
       // save incoming counter & increment for next outgoing
       payload.counter = received.counter + 1;
       // load the payload for the first received transmission on pipe 0
       radio.writeAckPayload(1, &payload, sizeof(payload));
       
-      if (strcmp(received.message, "Activar") == 0) {
-        for (pos = 0; pos <= 180; pos += 1) { // incrementa en pasos de 1 grado
-          myservo.write(pos); // Mover el servo a la posición 'pos'
-          delay(15);
-        }
-      }
+      String stringTemp = String(received.message);
 
-      if (strcmp(received.message, "Desactivar") == 0){
-      // Girar el servo desde 180 hasta 0 grados
-        for (pos = 180; pos >= 0; pos -= 1) { // decrementa en pasos de 1 grado
-          myservo.write(pos); // Mover el servo a la posición 'pos'
-          delay(15);
-        }
-      }
+      servoMover(stringTemp);
 
     }
+  } 
+}
 
+void radio_Serial(char mensaje){// change the role via the serial monitor
+      
 
-  }  // role
-
-  if (Serial.available()) {
-    // change the role via the serial monitor
-
-    char c = toupper(Serial.read());
-    if (c == 'T' && !role) {
+    if (mensaje == 'T' && !role) {
       // Become the TX node
 
       role = true;
@@ -232,7 +159,7 @@ void loop() {
       memcpy(payload.message, "Hello ", 6);  // change payload message
       radio.stopListening();                 // this also discards any unused ACK payloads
 
-    } else if (c == 'R' && role) {
+    } else if (mensaje == 'R' && role) {
       // Become the RX node
 
       role = false;
@@ -243,5 +170,4 @@ void loop() {
       radio.writeAckPayload(1, &payload, sizeof(payload));
       radio.startListening();
     }
-  }
-}  // loop
+}
