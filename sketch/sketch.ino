@@ -1,20 +1,36 @@
+unsigned long startMillis;  // Tiempo inicial
+unsigned long currentMillis; // Tiempo actual
+const unsigned long period = 5000; // Tiempo de espera en milisegundos (5 segundos)
+bool arduinos; //True = Pilotado aka Persona, False = banco de prueba
+char input = '0';
+
 void setup() {
   // Inicializar la comunicación serial
   Serial.begin(115200);
-   Serial.println("Bienvenido al banco de pruebas de <Ignitia>.");
+  Serial.println("Bienvenido al banco de pruebas de <Ignitia>. Presiona cualquier tecla en los siguientes 10 segundos para comenzar. Si no se ira a recepcion de datos.");
+  startMillis = millis();  // Captura el tiempo inicial 
+  char input = 0;
+  arduinos = esperadoInput(); 
+  menu();
 }
 
 void loop() {
   // Comprobar si hay datos disponibles en el puerto serial
-  while (!Serial.available()) {
+  if(arduinos == true){
+    while (!Serial.available()) {
     // wait for user input
+    }
+    // Leer el dato del puerto serial
+    char input = Serial.read();
   }
-  // Leer el dato del puerto serial
-  char input = Serial.read();
+
     
   // Llamar a la función correspondiente según el input
   if (input != '\n'){
     switch (input) {
+      case '0':
+        recepcionDatos();
+        break;
       case '1':
         conexionAntenas();
         break;
@@ -35,11 +51,13 @@ void loop() {
         break;
     }//Switch
     menu();
+  
   }//If input
 }//Loop
 
 void menu(){
   Serial.println("Menu:");
+  Serial.println("Por defecto se ira a recepcion de datos. ((0)");
   Serial.println("1. Checar la conexión de antenas");
   Serial.println("2. Test de sistemas");
   Serial.println("3. Switch fisico");
@@ -49,10 +67,54 @@ void menu(){
 } //Menu
 
 // Definición de las funciones
+
+bool esperadoInput() {
+  bool inputReceived = false;
+  bool salida;
+
+  while(currentMillis <= startMillis + period){
+    currentMillis = millis();  // Actualiza el tiempo actual
+  
+    // Verifica si hay datos disponibles en el puerto serial
+    if (Serial.available() > 0) {
+      char input = Serial.read();
+      Serial.println("Eres el piloto");
+      inputReceived = true;
+      break;
+    }
+        
+  }
+  return inputReceived;
+}//Checar si es el arduino tripulado
+
+void recepcionDatos() {
+
+  Serial.println("Reciviendo datos");
+  Serial.println("0, regresar al menu. Esperando input. ");
+
+  char inputRD = 123;
+
+
+  while (inputRD != '0'){
+    while (!Serial.available()) {
+      // wait for user input
+    }
+
+    inputRD = Serial.read();
+
+    Serial.print("Carácter ingresado: ");
+    Serial.println(inputRD);
+
+  }//While RD != 0
+  arduinos = true;
+
+}//Recepcion de datos 
+
+
 void conexionAntenas() {
 
   Serial.println("Función conexion de antenas.");
-  Serial.println("0, regresar al menu. Esperano input. ");
+  Serial.println("0, regresar al menu. Esperando input. ");
 
   char inputCA = 123;
 
@@ -73,7 +135,7 @@ void conexionAntenas() {
 
 void testSistemas() {
   Serial.println("Test de sistemas.");
-  Serial.println("0, regresar al menu. Esperano input. ");
+  Serial.println("0, regresar al menu. Esperando input. ");
 
   char inputTS = 123;
 
@@ -94,7 +156,7 @@ void testSistemas() {
 
 void swFisico() {
   Serial.println("Switch fisico.");
-  Serial.println("0, regresar al menu. Esperano input. ");
+  Serial.println("0, regresar al menu. Esperando input. ");
 
   char inputSW = 123;
 
@@ -115,7 +177,7 @@ void swFisico() {
 
 void prenderMotor() {
   Serial.println("Prender motor");
-  Serial.println("0, regresar al menu. Esperano input. ");
+  Serial.println("0, regresar al menu. Esperando input. ");
 
   char inputPM = 123;
 
@@ -136,7 +198,7 @@ void prenderMotor() {
 
 void leerSD() {
   Serial.println("Lectura de tarjeta SD");
-  Serial.println("0, regresar al menu. Esperano input. ");
+  Serial.println("0, regresar al menu. Esperando input. ");
 
   char inputSD = 123;
 
