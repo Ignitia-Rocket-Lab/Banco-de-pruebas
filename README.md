@@ -55,11 +55,15 @@ Historias de usuario (Prioridad -> Puntos) & Acceptance criteria:
       Que los datos de la load cell se puedan poner en un excell para hacer graficas de fuerza * tiempo.
       Poder quitar la sd sin miedo a la perdida de datos.
   
-  Como operador quiero que los datos del experimento se transmitan. (8, 13)
-      Que los datos de la load cell se transmitan (En vivo ?) del banco de pruebas al operador.
-  
+  Como operador quiero que los datos del experimento se transmitan en vivo. (8, 13)
+      Que los datos de la load cell se transmitan del banco de pruebas al operador.
+
   Como operador quiero hacer un test a distancia para comprobar que los sistemas esten en funcionamiento. (9, 13)
       Que con un comando se corra un test del load cell, se guarden los datos y los datos se transmitan al operador.
+
+   Como operador quiero que los datos de la tarjeta sd se puedan transmitir en cualquiero momento (10,13)
+      Que los datos almacenados dentro de la tarjeta sd se puedan transmitir.
+
        
 PUNTOS = 0,1,2,3,5,8,13,21,34,55,89,?.
 
@@ -69,4 +73,10 @@ PUNTOS = 0,1,2,3,5,8,13,21,34,55,89,?.
       Movimientos del menu
       Funciones basicas
       Interface
+
+  2,  Conexion antenas :
+      Conexion de anatenas
+      Mensaje entre antenas alterable
+      Recepcion de mensaje
+      
       
