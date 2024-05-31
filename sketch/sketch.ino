@@ -1,16 +1,69 @@
+/*
+ * See documentation at https://nRF24.github.io/RF24
+ * See License information at root directory of this library
+ * Author: Brendan Doherty (2bndy5)
+*/
+
+//Librerias
+//Antenas
+#include <SPI.h>
+#include "printf.h"
+#include "RF24.h"
+
+//Libreria del servomotor
+#include <Servo.h>
+
+//Pines antenas
+#define CE_PIN 7
+#define CSN_PIN 8
+
+//Antenas
+// instantiate an object for the nRF24L01 transceiver
+RF24 radio(CE_PIN, CSN_PIN);
+// an identifying device destination
+// Let these addresses be used for the pair
+uint8_t address[][6] = { "1Node", "2Node" };
+// It is very helpful to think of an address as a path instead of as
+// an identifying device destination
+// to use different addresses on a pair of radios, we need a variable to
+// uniquely identify which address this radio will use to transmit
+
+bool radioNumber = 1;  // 0 uses address[0] to transmit, 1 uses address[1] to transmit
+
+// Variable para : Receptor o transmitor
+bool role = false;  // true = TX role, false = RX role
+
+// For this example, we'll be using a payload containing
+// a string & an integer number that will be incremented
+// on every successful transmission.
+// Make a data structure to store the entire payload of different datatypes
+struct PayloadStruct {
+  char message[15];  // only using 6 characters for TX & ACK payloads
+  uint8_t counter;
+};
+PayloadStruct payload;
+
+//Cosas del servoMotor
+Servo myservo;
+int pos = 0;
+
+//Variables del menu
+
 unsigned long startMillis;  // Tiempo inicial
 unsigned long currentMillis; // Tiempo actual
-const unsigned long period = 5000; // Tiempo de espera en milisegundos (5 segundos)
+const unsigned long period = 15000; // Tiempo de espera en milisegundos (5 segundos)
 bool arduinos; //True = Pilotado aka Persona, False = banco de prueba
 char input = '0';
 
 void setup() {
   // Inicializar la comunicación serial
   Serial.begin(115200);
+  
   Serial.println("Bienvenido al banco de pruebas de <Ignitia>. Presiona cualquier tecla en los siguientes 10 segundos para comenzar. Si no se ira a recepcion de datos.");
   startMillis = millis();  // Captura el tiempo inicial 
   char input = 0;
-  arduinos = esperadoInput(); 
+  arduinos = esperadoInput();
+  radio_Setup(arduinos);
   menu();
 }
 
@@ -21,9 +74,11 @@ void loop() {
     // wait for user input
     }
     // Leer el dato del puerto serial
-    char input = Serial.read();
+    input = Serial.read();
+    //Serial.println("Se leyo un dato");
   }
 
+  Serial.println(arduinos);
     
   // Llamar a la función correspondiente según el input
   if (input != '\n'){
@@ -89,9 +144,12 @@ bool esperadoInput() {
 
 void recepcionDatos() {
 
-  Serial.println("Reciviendo datos");
+  Serial.println("Reciviendo datos ->");
   Serial.println("0, regresar al menu. Esperando input. ");
 
+  while(!arduinos){
+    arduinos = recivirDatos();
+  }
   char inputRD = 123;
 
 
@@ -110,13 +168,17 @@ void recepcionDatos() {
 
 }//Recepcion de datos 
 
-
 void conexionAntenas() {
 
   Serial.println("Función conexion de antenas.");
   Serial.println("0, regresar al menu. Esperando input. ");
 
   char inputCA = 123;
+
+  Serial.println("Mandar datos");
+  mandarDatos();
+
+  Serial.println("While -->");
 
 
   while (inputCA != '0'){
