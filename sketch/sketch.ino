@@ -79,7 +79,6 @@ void loop() {
   }
 
   Serial.println(arduinos);
-
     
   // Llamar a la función correspondiente según el input
   if (input != '\n'){
