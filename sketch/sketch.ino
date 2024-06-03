@@ -41,6 +41,7 @@ struct PayloadStruct {
   char message[15];  // only using 6 characters for TX & ACK payloads
   uint8_t counter;
 };
+
 PayloadStruct payload;
 
 //Cosas del servoMotor
@@ -53,7 +54,7 @@ unsigned long startMillis;  // Tiempo inicial
 unsigned long currentMillis; // Tiempo actual
 const unsigned long period = 15000; // Tiempo de espera en milisegundos (5 segundos)
 bool arduinos; //True = Pilotado aka Persona, False = banco de prueba
-char input = '0';
+String input = "0";
 
 void setup() {
   // Inicializar la comunicación serial
@@ -62,7 +63,7 @@ void setup() {
   Serial.println("Bienvenido al banco de pruebas de <Ignitia>. Presiona cualquier tecla en los siguientes 10 segundos para comenzar. Si no se ira a recepcion de datos.");
   startMillis = millis();  // Captura el tiempo inicial 
   char input = 0;
-  arduinos = esperadoInput();
+  arduinos = esperandoInput();
   radio_Setup(arduinos);
   menu();
 }
@@ -74,10 +75,12 @@ void loop() {
     // wait for user input
     }
     // Leer el dato del puerto serial
-    input = Serial.read();
-    //Serial.println("Se leyo un dato");
+    input = Serial.readStringUntil('\n');
+    input.trim();
   }
 
+<<<<<<< HEAD
+=======
   Serial.println(arduinos);
     
   // Llamar a la función correspondiente según el input
@@ -106,9 +109,30 @@ void loop() {
         break;
     }//Switch
     menu();
+>>>>>>> 0f5ede12169645541dcc34bc87c86859f583dd80
   
-  }//If input
-}//Loop
+  // Llamar a la función correspondiente según el input
+  if (input == '0') {
+    recepcionDatos();
+  } else if (input == "1") {
+    conexionAntenas();
+  } else if (input == "2") {
+    testSistemas();
+  } else if (input == "3") {
+    swFisico();
+  } else if (input == "4") {
+    prenderMotor();
+  } else if (input == "5") {
+    leerSD();
+  } else {
+    Serial.print("Opción no válida. Intente nuevamente ");
+    Serial.print(input);
+    Serial.println("");
+  }
+
+  menu();
+
+}
 
 void menu(){
   Serial.println("Menu:");
@@ -123,7 +147,7 @@ void menu(){
 
 // Definición de las funciones
 
-bool esperadoInput() {
+bool esperandoInput() {
   bool inputReceived = false;
   bool salida;
 
@@ -170,28 +194,18 @@ void recepcionDatos() {
 
 void conexionAntenas() {
 
-  Serial.println("Función conexion de antenas.");
-  Serial.println("0, regresar al menu. Esperando input. ");
+  Serial.println("Comprobar conexion entre antenas");
+  Serial.println("Mandar hello, esperando world");
 
-  char inputCA = 123;
-
-  Serial.println("Mandar datos");
-  mandarDatos();
-
-  Serial.println("While -->");
+  char inputString[15];
+  strcpy(inputString, "hello ");
 
 
-  while (inputCA != '0'){
-    while (!Serial.available()) {
-      // wait for user input
-    }
+  for(int x = 0; x < 10;x++){
+    mandarDatos(inputString);
+    delay(500); 
+  }
 
-    inputCA = Serial.read();
-
-    Serial.print("Carácter ingresado: ");
-    Serial.println(inputCA);
-
-  }//While CA != 0
 
 }//Conexion de antenas
 
@@ -218,43 +232,13 @@ void testSistemas() {
 
 void swFisico() {
   Serial.println("Switch fisico.");
-  Serial.println("0, regresar al menu. Esperando input. ");
-
-  char inputSW = 123;
-
-
-  while (inputSW != '0'){
-    while (!Serial.available()) {
-      // wait for user input
-    }
-
-    inputSW = Serial.read();
-
-    Serial.print("Carácter ingresado: ");
-    Serial.println(inputSW);
-
-  }//While SW != 0
+  procesarEnvioDatos(3);
 
 }//Switch fisico
 
 void prenderMotor() {
   Serial.println("Prender motor");
-  Serial.println("0, regresar al menu. Esperando input. ");
-
-  char inputPM = 123;
-
-
-  while (inputPM != '0'){
-    while (!Serial.available()) {
-      // wait for user input
-    }
-
-    inputPM = Serial.read();
-
-    Serial.print("Carácter ingresado: ");
-    Serial.println(inputPM);
-
-  }//While PM != 0
+  procesarEnvioDatos(4);
 
 }//Prender motor
 
