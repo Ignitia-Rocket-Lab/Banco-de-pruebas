@@ -78,38 +78,6 @@ void loop() {
     input = Serial.readStringUntil('\n');
     input.trim();
   }
-
-<<<<<<< HEAD
-=======
-  Serial.println(arduinos);
-    
-  // Llamar a la función correspondiente según el input
-  if (input != '\n'){
-    switch (input) {
-      case '0':
-        recepcionDatos();
-        break;
-      case '1':
-        conexionAntenas();
-        break;
-      case '2':
-        testSistemas();
-        break;
-      case '3':
-        swFisico();
-        break;
-      case '4' :
-        prenderMotor();
-        break;
-      case '5' :
-        leerSD();
-        break;
-      default:
-        Serial.println("Opción no válida. Intente nuevamente.");
-        break;
-    }//Switch
-    menu();
->>>>>>> 0f5ede12169645541dcc34bc87c86859f583dd80
   
   // Llamar a la función correspondiente según el input
   if (input == '0') {
