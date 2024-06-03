@@ -36,7 +36,7 @@ void radio_Setup(bool radioNumber){ //Set up del radio
     radio.startListening();  // put radio in RX mode
     //Serial.println("Receptor");
   }
-}
+}//Setup de la radio
 
 bool recivirDatos(){
   uint8_t pipe;
@@ -52,6 +52,9 @@ bool recivirDatos(){
     Serial.print(received.message);  // print incoming message
     Serial.print("-");
     Serial.print(received.counter);  // print incoming counter
+        
+    procesarRecepcionDatos(received);//Procesar el mensaje recivido
+
     Serial.print(F(" Sent: "));
     Serial.print(payload.message);    // print outgoing message
     Serial.println(payload.counter);  // print outgoing counter
@@ -59,11 +62,17 @@ bool recivirDatos(){
     // save incoming counter & increment for next outgoing
     payload.counter = received.counter + 1;
     // load the payload for the first received transmission on pipe 0
-    radio.writeAckPayload(1, &payload, sizeof(payload));
-    
-    if (strcmp(received.message, "Activar") == 0) {
-      Serial.println("Activar->");
-      arduinos = true;
+    //radio.writeAckPayload(1, &payload, sizeof(payload));
+
+  }
+}//Recepcion de paquetes de datos
+
+int procesarRecepcionDatos(PayloadStruct payload){
+  //Aqui se procesara el mensaje que se envia
+
+  if (strcmp(payload.message, "Activar") == 0) {
+    Serial.println("Activar->");
+    memcpy(payload.message, "Activar ", 8);
 
       /*
       for (pos = 0; pos <= 180; pos += 1) { // incrementa en pasos de 1 grado
@@ -71,74 +80,158 @@ bool recivirDatos(){
         delay(15);
       }
       */
-    }
-
-    if (strcmp(received.message, "Desactivar") == 0){
-    // Girar el servo desde 180 hasta 0 grados
-      Serial.println("DesActivar->");
-
-    /*
-      for (pos = 180; pos >= 0; pos -= 1) { // decrementa en pasos de 1 grado
-        myservo.write(pos); // Mover el servo a la posición 'pos'
-        delay(15);
-      }
-      */
-    }
-
   }
-}
 
-void mandarDatos(){
-  Serial.println("Que mensaje deseas mandar : ");
+  if (strcmp(payload.message, "Desactivar") == 0){
+  // Girar el servo desde 180 hasta 0 grados
+    Serial.println("DesActivar->");
+
+  /*
+    for (pos = 180; pos >= 0; pos -= 1) { // decrementa en pasos de 1 grado
+      myservo.write(pos); // Mover el servo a la posición 'pos'
+      delay(15);
+    }
+    */
+  }
+
+  radio.writeAckPayload(1, &payload, sizeof(payload));
+}//Procesar datos recividos
+
+void mandarDatos(char inputString){
+    
+  memcpy(payload.message, inputString, sizeof(payload.message));
+
+  unsigned long start_timer = micros();                  // start the timer
+  bool report = radio.write(&payload, sizeof(payload));  // transmit & save the report
+  unsigned long end_timer = micros();                    // end the timer
+
+  if (report) {
+    Serial.print(F("Transmission successful! "));  // payload was delivered
+    Serial.print(F("Time to transmit = "));
+    Serial.print(end_timer - start_timer);  // print the timer result
+    Serial.print(F(" us. Sent: "));
+    Serial.print(payload.message);  // print the outgoing message
+    Serial.println("");
+    Serial.print(payload.counter);  // print the outgoing counter
+    uint8_t pipe;
+    if (radio.available(&pipe)) {  // is there an ACK payload? grab the pipe number that received it
+      PayloadStruct received;
+      radio.read(&received, sizeof(received));  // get incoming ACK payload
+      Serial.print(F(" Recieved "));
+      Serial.print(radio.getDynamicPayloadSize());  // print incoming payload size
+      Serial.print(F(" bytes on pipe "));
+      Serial.print(pipe);  // print pipe number that received the ACK
+      Serial.print(F(": "));
+      Serial.print(received.message);    // print incoming message
+      Serial.println(received.counter);  // print incoming counter
+
+      // save incoming counter & increment for next outgoing
+      payload.counter = received.counter + 1;
+
+    } else {
+      Serial.println(F(" Recieved: an empty ACK packet"));  // empty ACK packet received
+    }
+
+  } else {
+    Serial.println(F("Transmission failed or timed out"));  // payload was not delivered
+  }
+  //delay(1000);  // slow transmissions down by 1 second
+
+}//Mandar Datos
+
+void procesarEnvioDatos(int optMenu){//Mandadr mensajes personalizados
+
+  bool mensajeCorrecto = false;
+
+  //while(true){
+    char inputString[15]; // Creamos un array para almacenar el mensaje recibido
+    for (int i = 0; i < 15; i++) {//Limpiamos el array
+        inputString[i] = '\0';
+    }
+    Serial.println("Que mensaje deseas mandar : ");
+    switch(optMenu) {
+        case 3:
+          Serial.println("Activar || Desactivar");
+          break;
+        case 4:
+          Serial.println("Prender || Apagar");
+
+    }
+    //switch
   
-  char inputString[10]; // Creamos un array para almacenar el mensaje recibido
     while (!Serial.available()) {
       // wait for user input
     }
 
     // Lee la cadena de caracteres desde el puerto serial hasta encontrar un salto de línea ('\n')
     int bytesRead = Serial.readBytesUntil('\n', inputString, sizeof(inputString));
-    // Agrega un carácter nulo al final de la cadena para formar una cadena de caracteres válida
-    inputString[bytesRead] = '\0';
-      // Copiar el mensaje recibido en la estructura PayloadStruct
-    memcpy(payload.message, inputString, sizeof(payload.message));
 
-    unsigned long start_timer = micros();                  // start the timer
-    bool report = radio.write(&payload, sizeof(payload));  // transmit & save the report
-    unsigned long end_timer = micros();                    // end the timer
+    switch(optMenu){
+      case 3: //Switch fisico
+        if(strcmp(inputString, "Activar") == 0 ){//Si es 0 el mensaje deja de mandar mensajes aqui
+          Serial.println("Se detecto Activar");
+          mensajeCorrecto = true;
 
-    if (report) {
-      Serial.print(F("Transmission successful! "));  // payload was delivered
-      Serial.print(F("Time to transmit = "));
-      Serial.print(end_timer - start_timer);  // print the timer result
-      Serial.print(F(" us. Sent: "));
-      Serial.print(payload.message);  // print the outgoing message
-      Serial.println("");
-      Serial.print(payload.counter);  // print the outgoing counter
-      uint8_t pipe;
-      if (radio.available(&pipe)) {  // is there an ACK payload? grab the pipe number that received it
-        PayloadStruct received;
-        radio.read(&received, sizeof(received));  // get incoming ACK payload
-        Serial.print(F(" Recieved "));
-        Serial.print(radio.getDynamicPayloadSize());  // print incoming payload size
-        Serial.print(F(" bytes on pipe "));
-        Serial.print(pipe);  // print pipe number that received the ACK
-        Serial.print(F(": "));
-        Serial.print(received.message);    // print incoming message
-        Serial.println(received.counter);  // print incoming counter
+        } else if(strcmp(inputString, "Desactivar") == 0 ){//Si es 0 el mensaje deja de mandar mensajes aqui
+          Serial.println("Se detecto Desactivar");
+          mensajeCorrecto = true;
+        } else{
+          Serial.print("Este mensaje '"); 
+          Serial.print(inputString);
+          Serial.print("' no esta preconfigurado.");
+          Serial.println("");
+        }
 
-        // save incoming counter & increment for next outgoing
-        payload.counter = received.counter + 1;
+        break;
+      case 4:
+        if(strcmp(inputString, "Prender") == 0 ){//Si es 0 el mensaje deja de mandar mensajes aqui
+          Serial.println("Se detecto prender motor");
+          mensajeCorrecto = true;
 
-      } else {
-        Serial.println(F(" Recieved: an empty ACK packet"));  // empty ACK packet received
-      }
-
-    } else {
-      Serial.println(F("Transmission failed or timed out"));  // payload was not delivered
+        } else if(strcmp(inputString, "Apagar") == 0 ){//Si es 0 el mensaje deja de mandar mensajes aqui
+          Serial.println("Se detecto apagar motor");
+          mensajeCorrecto = true;
+        } 
+        else{
+          Serial.print("Este mensaje "); 
+          Serial.print(inputString);
+          Serial.print(" no esta preconfigurado.");
+          Serial.println("");
+        }
+        break;
     }
 
-    // to make this example readable in the serial monitor
-    delay(2000);  // slow transmissions down by 1 second
+    if(mensajeCorrecto){
+      inputString[bytesRead] = '\0';
+      mandarDatos(inputString);
+      mensajeCorrecto = false;
 
-}
+    }
+
+    delay(1000);
+
+  //}
+  
+}//Checar que los datos a enviar concuerdan con la funcion seleccionada
+
+void empezarEnviarDatos(){
+  Serial.println("Empezar configuracion para mandar datos");
+
+  memcpy(payload.message, "Hello ", 6);  // change payload message
+  radio.stopListening();                 // this also discards any unused ACK payloads
+
+  arduinos = !arduinos;
+}//Configuracion para enviar datos
+
+void empezarEscucharDatos(){
+  Serial.println(F("Empezar configuracion para recibir datos"));
+  memcpy(payload.message, "World ", 6);  // change payload message
+
+  // load the payload for the first received transmission on pipe 0
+  radio.writeAckPayload(1, &payload, sizeof(payload));
+  radio.startListening();
+
+  String input = "0";
+  arduinos = !arduinos;
+
+}//Configuracion para enviar datos
