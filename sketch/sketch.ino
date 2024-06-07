@@ -38,7 +38,7 @@ bool role = false;  // true = TX role, false = RX role
 // on every successful transmission.
 // Make a data structure to store the entire payload of different datatypes
 struct PayloadStruct {
-  char message[15];  // only using 6 characters for TX & ACK payloads
+  char message[7];  // only using 6 characters for TX & ACK payloads
   uint8_t counter;
 };
 
@@ -79,40 +79,10 @@ void loop() {
     input.trim();
   }
 
-<<<<<<< HEAD
-=======
   Serial.println(arduinos);
-    
-  // Llamar a la función correspondiente según el input
-  if (input != '\n'){
-    switch (input) {
-      case '0':
-        recepcionDatos();
-        break;
-      case '1':
-        conexionAntenas();
-        break;
-      case '2':
-        testSistemas();
-        break;
-      case '3':
-        swFisico();
-        break;
-      case '4' :
-        prenderMotor();
-        break;
-      case '5' :
-        leerSD();
-        break;
-      default:
-        Serial.println("Opción no válida. Intente nuevamente.");
-        break;
-    }//Switch
-    menu();
->>>>>>> 0f5ede12169645541dcc34bc87c86859f583dd80
   
   // Llamar a la función correspondiente según el input
-  if (input == '0') {
+  if (input == "0") {
     recepcionDatos();
   } else if (input == "1") {
     conexionAntenas();
@@ -197,8 +167,8 @@ void conexionAntenas() {
   Serial.println("Comprobar conexion entre antenas");
   Serial.println("Mandar hello, esperando world");
 
-  char inputString[15];
-  strcpy(inputString, "hello ");
+  char inputString[6];
+  strcpy(payload.message, "hello ");
 
 
   for(int x = 0; x < 10;x++){

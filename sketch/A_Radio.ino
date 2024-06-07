@@ -30,7 +30,7 @@ void radio_Setup(bool radioNumber){ //Set up del radio
     //Serial.println("Transmisor");
   } else {
     // setup the ACK payload & load the first response into the FIFO
-    memcpy(payload.message, "Recivido ", 9);  // set the payload message
+    memcpy(payload.message, "World  ", 6);  // set the payload message
     // load the payload for the first received transmission on pipe 0
     radio.writeAckPayload(1, &payload, sizeof(payload));
     radio.startListening();  // put radio in RX mode
@@ -70,9 +70,9 @@ bool recivirDatos(){
 int procesarRecepcionDatos(PayloadStruct payload){
   //Aqui se procesara el mensaje que se envia
 
-  if (strcmp(payload.message, "Activar") == 0) {
+  if (strcmp(payload.message, "Activ ") == 0) {
     Serial.println("Activar->");
-    memcpy(payload.message, "Activar ", 8);
+    memcpy(payload.message, "ActRe ", 6);
 
       /*
       for (pos = 0; pos <= 180; pos += 1) { // incrementa en pasos de 1 grado
@@ -98,8 +98,9 @@ int procesarRecepcionDatos(PayloadStruct payload){
 }//Procesar datos recividos
 
 void mandarDatos(char inputString){
+  Serial.println(payload.message);
     
-  memcpy(payload.message, inputString, sizeof(payload.message));
+  //memcpy(payload.message, inputString, sizeof(payload.message));
 
   unsigned long start_timer = micros();                  // start the timer
   bool report = radio.write(&payload, sizeof(payload));  // transmit & save the report
@@ -170,6 +171,7 @@ void procesarEnvioDatos(int optMenu){//Mandadr mensajes personalizados
       case 3: //Switch fisico
         if(strcmp(inputString, "Activar") == 0 ){//Si es 0 el mensaje deja de mandar mensajes aqui
           Serial.println("Se detecto Activar");
+          strcpy(payload.message, "Activ ");
           mensajeCorrecto = true;
 
         } else if(strcmp(inputString, "Desactivar") == 0 ){//Si es 0 el mensaje deja de mandar mensajes aqui
@@ -202,7 +204,6 @@ void procesarEnvioDatos(int optMenu){//Mandadr mensajes personalizados
     }
 
     if(mensajeCorrecto){
-      inputString[bytesRead] = '\0';
       mandarDatos(inputString);
       mensajeCorrecto = false;
 
