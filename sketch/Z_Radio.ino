@@ -40,6 +40,7 @@ void radio_Setup(bool radioNumber){ //Set up del radio
 
 bool recivirDatos(){
   uint8_t pipe;
+
   if (radio.available(&pipe)) {                     // is there a payload? get the pipe number that recieved it
     uint8_t bytes = radio.getDynamicPayloadSize();  // get the size of the payload
     PayloadStruct received;
@@ -53,7 +54,7 @@ bool recivirDatos(){
     Serial.print("-");
     Serial.print(received.counter);  // print incoming counter
         
-    procesarRecepcionDatos(received);//Procesar el mensaje recivido
+    arduinos = procesarRecepcionDatos(received);//Procesar el mensaje recivido
 
     Serial.print(F(" Sent: "));
     Serial.print(payload.message);    // print outgoing message
@@ -63,9 +64,10 @@ bool recivirDatos(){
     payload.counter = received.counter + 1;
 
   }
+  return arduinos;
 }//Recepcion de paquetes de datos
 
-void procesarRecepcionDatos(PayloadStruct payload){
+bool procesarRecepcionDatos(PayloadStruct payload){
   //Aqui se procesara el mensaje que se envia
 
   if (strcmp(payload.message, "Activ ") == 0) {
@@ -90,6 +92,8 @@ void procesarRecepcionDatos(PayloadStruct payload){
     Serial.println("Cambair TX/RX->");
     memcpy(payload.message, "Chang ", 6);
     empezarEnviarDatos();
+    radio.writeAckPayload(1, &payload, sizeof(payload));
+    return true;
 
   } else{
     //El mensaje captado no tiene respuesta programada, el mensaje se corrompio o no se tiene respuesta
@@ -99,6 +103,7 @@ void procesarRecepcionDatos(PayloadStruct payload){
   }
 
   radio.writeAckPayload(1, &payload, sizeof(payload));
+  return false;
 }//Procesar datos recividos
 
 void mandarDatos(){
@@ -253,6 +258,6 @@ void empezarEscucharDatos(){
   radio.startListening();
 
   arduinos = !arduinos;
-  input = "0"
+  input = "0";
 
 }//Configuracion para enviar datos

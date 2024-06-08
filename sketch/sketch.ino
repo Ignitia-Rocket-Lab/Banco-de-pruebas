@@ -98,9 +98,7 @@ void recepcionDatos() {
   while(!arduinos){
     arduinos = recivirDatos();
   }
-
-  arduinos = true;
-
+  Serial.println("Se salio de recepcion de datos");
 }//Recepcion de datos 
 
 void conexionAntenas() {
