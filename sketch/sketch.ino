@@ -56,8 +56,10 @@ const unsigned long period = 10000; // Tiempo de espera en milisegundos (5 segun
 bool arduinos; //True = Pilotado aka Persona, False = banco de prueba
 String input = "0";
 
+// FUNCIONES
 
 void menu(){
+
   Serial.println("Menu:");
   Serial.println("Por defecto se ira a recepcion de datos. (0)");
   Serial.println("1. Checar la conexión de antenas");
@@ -66,10 +68,10 @@ void menu(){
   Serial.println("4. Prender motor");
   Serial.println("5. Lectura de fuerza");
   Serial.println("6. Leer SD");
+  Serial.println("7. Cambiar TX -> RX");
 
 } //Menu
 
-// Definición de las funciones
 
 bool esperandoInput() {
   bool inputReceived = false;
@@ -92,7 +94,6 @@ bool esperandoInput() {
 void recepcionDatos() {
 
   Serial.println("Reciviendo datos ->");
-  Serial.println("0, regresar al menu. Esperando input. ");
 
   while(!arduinos){
     arduinos = recivirDatos();
@@ -151,8 +152,8 @@ void prenderMotor() {
 }//Prender motor
 
 void adcLectura(){
-
-}
+ Serial.println("Adc Lectura");
+}//ADC lectura
 
 void leerSD() {
   Serial.println("Lectura de tarjeta SD");
@@ -175,6 +176,12 @@ void leerSD() {
 
 }//Leer sd
 
+void cambiarTXRX(){
+  Serial.println("Cambiar de TX -> RX");
+  procesarEnvioDatos(7);
+  empezarEscucharDatos();
+
+}//Cambiar tx -> rx
 
 void setup() {
   // Inicializar la comunicación serial
@@ -189,7 +196,7 @@ void setup() {
   mossfetSetUp(); //mossfet setup
 
   menu();
-}
+}//SETUPs
 
 void loop() {
   // Comprobar si hay datos disponibles en el puerto serial
@@ -217,6 +224,8 @@ void loop() {
     adcLectura();
   }else if (input == "6") {
     leerSD();
+  }else if (input == "7") {
+    cambiarTXRX();
   } else {
     Serial.print("Opción no válida. Intente nuevamente ");
     Serial.print(input);
@@ -225,4 +234,4 @@ void loop() {
 
   menu();
 
-}
+}//LOOP

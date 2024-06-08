@@ -61,8 +61,6 @@ bool recivirDatos(){
 
     // save incoming counter & increment for next outgoing
     payload.counter = received.counter + 1;
-    // load the payload for the first received transmission on pipe 0
-    //radio.writeAckPayload(1, &payload, sizeof(payload));
 
   }
 }//Recepcion de paquetes de datos
@@ -71,29 +69,33 @@ void procesarRecepcionDatos(PayloadStruct payload){
   //Aqui se procesara el mensaje que se envia
 
   if (strcmp(payload.message, "Activ ") == 0) {
+    //Activa el switch fisico
     Serial.println("Activar->");
     memcpy(payload.message, "ActSW ", 6);
     servoMover(true);
     
-  }
-
-  if (strcmp(payload.message, "Desac ") == 0){
-  // Girar el servo desde 180 hasta 0 grados
+  } else if (strcmp(payload.message, "Desac ") == 0){
+  // Desactiva el switch fisico
     Serial.println("DesActivar->");
     memcpy(payload.message, "DesSW ", 6);
     servoMover(false);
-  }
 
-  if (strcmp(payload.message, "Prend ") == 0){
-  // Girar el servo desde 180 hasta 0 grados
+  }else if (strcmp(payload.message, "Prend ") == 0){
+  // Suelta el voltaje
     Serial.println("Prender motor->");
-    memcpy(payload.message, "Prend ", 6);
-  }
+    memcpy(payload.message, "FUEGO ", 6);
 
-  if (strcmp(payload.message, "Apaga ") == 0){
+  }else if (strcmp(payload.message, "Cambi ") == 0){
   // Girar el servo desde 180 hasta 0 grados
-    Serial.println("Apagar Motor->");
-    memcpy(payload.message, "Apaga ", 6);
+    Serial.println("Cambair TX/RX->");
+    memcpy(payload.message, "Chang ", 6);
+    empezarEnviarDatos();
+
+  } else{
+    //El mensaje captado no tiene respuesta programada, el mensaje se corrompio o no se tiene respuesta
+    Serial.println("Mensaje sin respuesta disponible");
+    memcpy(payload.message, "NONME ", 6);
+
   }
 
   radio.writeAckPayload(1, &payload, sizeof(payload));
@@ -149,74 +151,85 @@ void procesarEnvioDatos(int optMenu){//Mandadr mensajes personalizados
 
   bool mensajeCorrecto = false;
 
-    Serial.println("Que mensaje deseas mandar : ");
-    switch(optMenu) {
-        case 3:
-          Serial.println("Activar || Desactivar");
-          break;
-        case 4:
-          Serial.println("Prender");
-
-    }
-    //switch
+  Serial.println("Que mensaje deseas mandar : ");
+  switch(optMenu) {
+    case 3:
+      Serial.println("Activar || Desactivar");
+      break;
+    case 4:
+      Serial.println("Prender");
+    case 7:
+      Serial.println("Cambiar");
+  }
   
-    while (!Serial.available()) {
-      // wait for user input
-    }
+  while (!Serial.available()) {
+    // wait for user input
+  }
 
-    // Lee la cadena de caracteres desde el puerto serial hasta encontrar un salto de línea ('\n')
-    char inputString[15]; // Creamos un array para almacenar el mensaje recibido
-    for (int i = 0; i < 15; i++) {//Limpiamos el array
-        inputString[i] = '\0';
-    }
+  // Lee la cadena de caracteres desde el puerto serial hasta encontrar un salto de línea ('\n')
+  char inputString[15]; // Creamos un array para almacenar el mensaje recibido
+  for (int i = 0; i < 15; i++) {//Limpiamos el array
+      inputString[i] = '\0';
+  }
 
-    int bytesRead = Serial.readBytesUntil('\n', inputString, sizeof(inputString));
+  int bytesRead = Serial.readBytesUntil('\n', inputString, sizeof(inputString));
 
-    switch(optMenu){
-      case 3: //Switch fisico
-        if(strcmp(inputString, "Activar") == 0 ){//Si es 0 el mensaje deja de mandar mensajes aqui
-          Serial.println("Se detecto Activar");
-          strcpy(payload.message, "Activ ");
-          mensajeCorrecto = true;
+  switch(optMenu){
+    case 3: //Switch fisico
+      if(strcmp(inputString, "Activar") == 0 ){//Si es 0 el mensaje deja de mandar mensajes aqui
+        Serial.println("Se detecto Activar");
+        strcpy(payload.message, "Activ ");
+        mensajeCorrecto = true;
 
-        } else if(strcmp(inputString, "Desactivar") == 0 ){//Si es 0 el mensaje deja de mandar mensajes aqui
-          Serial.println("Se detecto Desactivar");
-          strcpy(payload.message, "Desac ");
-          mensajeCorrecto = true;
+      } else if(strcmp(inputString, "Desactivar") == 0 ){//Si es 0 el mensaje deja de mandar mensajes aqui
+        Serial.println("Se detecto Desactivar");
+        strcpy(payload.message, "Desac ");
+        mensajeCorrecto = true;
 
-        } else{
-          Serial.print("Este mensaje '"); 
-          Serial.print(inputString);
-          Serial.print("' no esta preconfigurado.");
-          Serial.println("");
-        }
+      } else{
+        Serial.print("Este mensaje '"); 
+        Serial.print(inputString);
+        Serial.print("' no esta preconfigurado.");
+        Serial.println("");
+      }
 
-        break;
-      case 4:
-        if(strcmp(inputString, "Prender") == 0 ){//Si es 0 el mensaje deja de mandar mensajes aqui
-          Serial.println("Se detecto prender motor");
-          strcpy(payload.message, "Prend ");
-          mensajeCorrecto = true;
-        }
+      break;
+    case 4:
+      if(strcmp(inputString, "Prender") == 0 ){//Si es 0 el mensaje deja de mandar mensajes aqui
+        Serial.println("Se detecto prender motor");
+        strcpy(payload.message, "Prend ");
+        mensajeCorrecto = true;
+      } else {
+        Serial.print("Este mensaje "); 
+        Serial.print(inputString);
+        Serial.print(" no esta preconfigurado.");
+        Serial.println("");
+      }
+      break;
+    
+    case 7:
+      if(strcmp(inputString, "Cambiar") == 0 ){//Si es 0 el mensaje deja de mandar mensajes aqui
+        Serial.println("Se detecto Cambiar");
+        strcpy(payload.message, "Cambi ");
+        mensajeCorrecto = true;
+      } else {
+        Serial.print("Este mensaje "); 
+        Serial.print(inputString);
+        Serial.print(" no esta preconfigurado.");
+        Serial.println("");
+      }
+      break;
+  }
 
-        else{
-          Serial.print("Este mensaje "); 
-          Serial.print(inputString);
-          Serial.print(" no esta preconfigurado.");
-          Serial.println("");
-        }
-        break;
-    }
+  if(mensajeCorrecto){
+    
+    mandarDatos();
+    confirmarMensaje();
+    mensajeCorrecto = false;
 
-    if(mensajeCorrecto){
-      
-      mandarDatos();
-      confirmarMensaje();
-      mensajeCorrecto = false;
+  }
 
-    }
-
-    delay(1000);
+  delay(1000);
 
   //}
   
@@ -239,7 +252,7 @@ void empezarEscucharDatos(){
   radio.writeAckPayload(1, &payload, sizeof(payload));
   radio.startListening();
 
-  String input = "0";
   arduinos = !arduinos;
+  input = "0"
 
 }//Configuracion para enviar datos
