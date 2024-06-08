@@ -52,66 +52,20 @@ int pos = 0;
 
 unsigned long startMillis;  // Tiempo inicial
 unsigned long currentMillis; // Tiempo actual
-const unsigned long period = 15000; // Tiempo de espera en milisegundos (5 segundos)
+const unsigned long period = 10000; // Tiempo de espera en milisegundos (5 segundos)
 bool arduinos; //True = Pilotado aka Persona, False = banco de prueba
 String input = "0";
 
-void setup() {
-  // Inicializar la comunicación serial
-  Serial.begin(115200);
-  
-  Serial.println("Bienvenido al banco de pruebas de <Ignitia>. Presiona cualquier tecla en los siguientes 10 segundos para comenzar. Si no se ira a recepcion de datos.");
-  startMillis = millis();  // Captura el tiempo inicial 
-  char input = 0;
-  arduinos = esperandoInput();
-  radio_Setup(arduinos);
-  menu();
-}
-
-void loop() {
-  // Comprobar si hay datos disponibles en el puerto serial
-  if(arduinos == true){
-    while (!Serial.available()) {
-    // wait for user input
-    }
-    // Leer el dato del puerto serial
-    input = Serial.readStringUntil('\n');
-    input.trim();
-  }
-
-  Serial.println(arduinos);
-  
-  // Llamar a la función correspondiente según el input
-  if (input == "0") {
-    recepcionDatos();
-  } else if (input == "1") {
-    conexionAntenas();
-  } else if (input == "2") {
-    testSistemas();
-  } else if (input == "3") {
-    swFisico();
-  } else if (input == "4") {
-    prenderMotor();
-  } else if (input == "5") {
-    leerSD();
-  } else {
-    Serial.print("Opción no válida. Intente nuevamente ");
-    Serial.print(input);
-    Serial.println("");
-  }
-
-  menu();
-
-}
 
 void menu(){
   Serial.println("Menu:");
-  Serial.println("Por defecto se ira a recepcion de datos. ((0)");
+  Serial.println("Por defecto se ira a recepcion de datos. (0)");
   Serial.println("1. Checar la conexión de antenas");
   Serial.println("2. Test de sistemas");
   Serial.println("3. Switch fisico");
   Serial.println("4. Prender motor");
-  Serial.println("5. Leer SD");
+  Serial.println("5. Lectura de fuerza");
+  Serial.println("6. Leer SD");
 
 } //Menu
 
@@ -119,7 +73,6 @@ void menu(){
 
 bool esperandoInput() {
   bool inputReceived = false;
-  bool salida;
 
   while(currentMillis <= startMillis + period){
     currentMillis = millis();  // Actualiza el tiempo actual
@@ -144,20 +97,7 @@ void recepcionDatos() {
   while(!arduinos){
     arduinos = recivirDatos();
   }
-  char inputRD = 123;
 
-
-  while (inputRD != '0'){
-    while (!Serial.available()) {
-      // wait for user input
-    }
-
-    inputRD = Serial.read();
-
-    Serial.print("Carácter ingresado: ");
-    Serial.println(inputRD);
-
-  }//While RD != 0
   arduinos = true;
 
 }//Recepcion de datos 
@@ -167,12 +107,10 @@ void conexionAntenas() {
   Serial.println("Comprobar conexion entre antenas");
   Serial.println("Mandar hello, esperando world");
 
-  char inputString[6];
   strcpy(payload.message, "hello ");
 
-
   for(int x = 0; x < 10;x++){
-    mandarDatos(inputString);
+    mandarDatos();
     delay(500); 
   }
 
@@ -212,6 +150,10 @@ void prenderMotor() {
 
 }//Prender motor
 
+void adcLectura(){
+
+}
+
 void leerSD() {
   Serial.println("Lectura de tarjeta SD");
   Serial.println("0, regresar al menu. Esperando input. ");
@@ -232,3 +174,55 @@ void leerSD() {
   }//While SD != 0
 
 }//Leer sd
+
+
+void setup() {
+  // Inicializar la comunicación serial
+  Serial.begin(115200);
+  
+  Serial.println("Bienvenido al banco de pruebas de <Ignitia>. Presiona cualquier tecla en los siguientes 10 segundos para comenzar. Si no se ira a recepcion de datos.");
+  startMillis = millis();  // Captura el tiempo inicial 
+  arduinos = esperandoInput();
+
+  radio_Setup(arduinos); //Radio set up
+  servoMotorSetup(); //Servo motor set up
+  mossfetSetUp(); //mossfet setup
+
+  menu();
+}
+
+void loop() {
+  // Comprobar si hay datos disponibles en el puerto serial
+  if(arduinos == true){
+    while (!Serial.available()) {
+    // wait for user input
+    }
+    // Leer el dato del puerto serial
+    input = Serial.readStringUntil('\n');
+    input.trim();
+  }
+  
+  // Llamar a la función correspondiente según el input
+  if (input == "0") {
+    recepcionDatos();
+  } else if (input == "1") {
+    conexionAntenas();
+  } else if (input == "2") {
+    testSistemas();
+  } else if (input == "3") {
+    swFisico();
+  } else if (input == "4") {
+    prenderMotor();
+  } else if (input == "5") {
+    adcLectura();
+  }else if (input == "6") {
+    leerSD();
+  } else {
+    Serial.print("Opción no válida. Intente nuevamente ");
+    Serial.print(input);
+    Serial.println("");
+  }
+
+  menu();
+
+}
