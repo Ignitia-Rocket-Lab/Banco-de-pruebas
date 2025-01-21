@@ -1,16 +1,19 @@
 #include "ADCSetup.h"
+#include "SDLogger.h"
 
 void setup() {
   setupADC();
+  while(!setupSD(4)){
+    Serial.println("Retrying...");
+  }
+  initFile();
 }
 
 void loop() {
-  if (handleConversion() == true && adcMeasurement > 10)
+  if (handleConversion() == true && adcMeasurement > 50)
   {
     Serial.print("Lectura ADC:\t");
-    Serial.print(adcMeasurement);
-    Serial.print("\t\tPeso Calculado:\t");
-    Serial.println(WEIGHT(adcMeasurement));
+    logToSD(String(adcMeasurement), true);
   }
 
   // delay 10mS
