@@ -64,7 +64,7 @@ bool handleConversion()
     // bajar la bandera de interrupcion
     conversionReady = false;
     // obtener la medicion del ADC
-    adcMeasurement = ADS.getValue() + 43;
+    adcMeasurement = ADS.getValue() + 43; // ajuste para centrar la lectura de ADC a cero (en reposo) *Falta restar peso del motor*
     // inidicar que ya se manejo la interrupcion
     return true;
   }
