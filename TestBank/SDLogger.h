@@ -5,6 +5,8 @@
 #include <SPI.h>
 #include <SD.h>
 
+#define BUTTON_PIN 3
+
 extern File testBankLog; // Archivo global externo
 extern String logFilename; //Nombre del log actual
 
@@ -22,5 +24,7 @@ bool logToSD(const String& data, bool newline = false);
 
 // Cierra el archivo
 bool closeSD(void);
+
+void logMeasurement(void);
 
 #endif

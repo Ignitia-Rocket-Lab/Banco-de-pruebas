@@ -1,6 +1,7 @@
 #ifndef ADCSETUP_H
 #define ADCSETUP_H
-
+#include <Wire.h>
+#include <Arduino.h>
 #include "ADS1X15.h"
 
 // macros del driver
@@ -22,5 +23,7 @@ void setupADC(void);
 extern ADS1115 ADS;
 extern int16_t adcMeasurement;
 extern volatile bool conversionReady;
+extern unsigned long startTime;
+extern bool isTestRunning;
 
 #endif
