@@ -2,6 +2,10 @@
 #include <Wire.h>
 #include <Arduino.h>
 
+// Constantes configurables
+const uint8_t INTERRUPT_PIN = 2;         
+const uint32_t SERIAL_BAUD_RATE = 115200;
+
 // constructor del ADS115 en el bus I2C con address 0x48 (Pin ADDR -> GND)
 extern ADS1115 ADS(0x48);
 
@@ -12,12 +16,12 @@ extern int16_t adcMeasurement = 0;
 extern volatile bool conversionReady = false;
 
 void setupADC() {
-  Serial.begin(115200);
+  Serial.begin(SERIAL_BAUD_RATE);
   Wire.begin();
 
   // ligar el pin 2 con la interrupcion del ADC y el interrupt handler
-  pinMode(2, INPUT_PULLUP);
-  attachInterrupt(digitalPinToInterrupt(2), adsInterruptHandler, RISING);
+  pinMode(INTERRUPT_PIN, INPUT_PULLUP);
+  attachInterrupt(digitalPinToInterrupt(INTERRUPT_PIN), adsInterruptHandler, RISING);
 
   // inicializar ads y checar conexión
   ADS.begin();
