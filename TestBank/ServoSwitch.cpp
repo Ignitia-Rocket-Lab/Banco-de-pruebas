@@ -19,25 +19,25 @@ void moveServo(int angle) {
 }
 
 // Abrir switch (ON)
-void openSwitch() {
-  servo.write(ANGLE_OPEN);
-  currentAngle = ANGLE_OPEN;
+void onSwitch() {
+  servo.write(ANGLE_ON);
+  currentAngle = ANGLE_ON;
   isServoOn = true;
 }
 
 // Cerrar switch (OFF)
-void closeSwitch() {
-  servo.write(ANGLE_CLOSED);
-  currentAngle = ANGLE_CLOSED;
+void offSwitch() {
+  servo.write(ANGLE_OFF);
+  currentAngle = ANGLE_OFF;
   isServoOn = false;
 }
 
 // Alternar estado
 void toggleSwitch() {
   if (isServoOn) {
-    closeSwitch();
+    offSwitch();
   } else {
-    openSwitch();
+    onSwitch();
   }
 }
 

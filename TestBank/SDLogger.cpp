@@ -8,11 +8,11 @@ String logFilename;
 
 
 // Inicializa la tarjeta SD
-bool setupSD(int chipSelect) {
+bool setupSD() {
     Serial.print("Initializing SD card...\t");
     delay(1000);
 
-    if (!SD.begin(chipSelect)) {
+    if (!SD.begin(CS_pin)) {
         Serial.println("Initialization failed!");
         return false;
     }
@@ -21,6 +21,7 @@ bool setupSD(int chipSelect) {
     delay(100);
 }
 
+// Genera el primer nombre de archivo disponible en orden ascendente 
 void filenameGen(void) {
     int counter = 1;
     String filename;

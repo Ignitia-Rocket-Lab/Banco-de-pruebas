@@ -15,6 +15,8 @@ enum LEDState {
   LED_ALL_ON = 0b11    // 11: Ambos encendidos
 };
 
+extern LEDState currentLEDState;
+
 // Funciones de control
 void setupLEDs();
 void setLEDState(LEDState state);
@@ -23,5 +25,6 @@ void turnOnRight();
 void turnOnLeft();
 void turnOnAll();
 bool ledsProcessSerialCommand();
+String getLEDStateString(); 
 
 #endif

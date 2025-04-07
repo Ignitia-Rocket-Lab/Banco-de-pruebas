@@ -1,5 +1,7 @@
 #include "Leds.h"
 
+LEDState currentLEDState = LED_OFF;
+
 void setupLEDs() {
   pinMode(LED_LEFT, OUTPUT);
   pinMode(LED_RIGHT, OUTPUT);
@@ -8,6 +10,7 @@ void setupLEDs() {
 }
 
 void setLEDState(LEDState state) {
+  currentLEDState = state;
   digitalWrite(LED_LEFT, (state & LED_LEFT_ON) ? HIGH : LOW);
   digitalWrite(LED_RIGHT, (state & LED_RIGHT_ON) ? HIGH : LOW);
 }
@@ -38,4 +41,14 @@ bool ledsProcessSerialCommand() {
     while (Serial.available() > 0) Serial.read();  // Limpiar buffer
   }
   return false;
+}
+
+String getLEDStateString() {
+  switch(currentLEDState) {
+    case LED_OFF:      return "OFF";
+    case LED_RIGHT_ON: return "RIGHT_ON";
+    case LED_LEFT_ON:  return "LEFT_ON";
+    case LED_ALL_ON:   return "ALL_ON";
+    default:           return "UNKNOWN";
+  }
 }

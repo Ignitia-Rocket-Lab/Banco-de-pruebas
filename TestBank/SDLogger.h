@@ -5,11 +5,13 @@
 #include <SPI.h>
 #include <SD.h>
 
+const uint8_t CS_pin = 10;   // Pin para chip select
+
 extern File testBankLog; // Archivo global externo
 extern String logFilename; //Nombre del log actual
 
 // Inicializa la tarjeta SD
-bool setupSD(int chipSelect);
+bool setupSD();
 
 // Generar nombre del log
 void filenameGen(void);

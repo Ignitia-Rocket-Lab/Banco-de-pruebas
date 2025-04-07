@@ -31,14 +31,14 @@ void setup() {
   setupServo();                 // Inicializa servo
   // 2. Abrir y cerrar servo (una vez cada uno)
   Serial.println("Abriendo switch...");
-  openSwitch();                 // Abre servo (posición ON)
+  onSwitch();                 // Abre servo (posición ON)
   delay(1000);                  // Espera 1 segundo
   Serial.println("Cerrando switch...");
-  closeSwitch();                // Cierra servo (posición OFF)
+  offSwitch();                // Cierra servo (posición OFF)
   delay(1000);
 
   setupADC();
-  while(!setupSD(10)){
+  while(!setupSD()){
     Serial.println("Retrying...");
   } 
   initFile();
@@ -66,7 +66,7 @@ void setup() {
 
 //Loop para probar posiciones del servo
 void loop() {
-    if (ledsProcessSerialCommand()) {
-    logToSD("Leds cambiaron de estado");
+  if (ledsProcessSerialCommand()) {
+    logToSD("LEDs cambiaron de estado: " + getLEDStateString());
   }
 }
