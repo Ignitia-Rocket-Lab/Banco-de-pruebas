@@ -2,6 +2,7 @@
 #include "SDLogger.h"
 #include "ServoSwitch.h"
 #include "Leds.h"
+#include "Igniter.h"
 
 // Definicion de usos de leds y estados
 #define CASO1 turnOff();
@@ -29,12 +30,23 @@ void setup() {
 
   
   setupServo();                 // Inicializa servo
+  setupIgniter(); 
   // 2. Abrir y cerrar servo (una vez cada uno)
-  Serial.println("Abriendo switch...");
-  onSwitch();                 // Abre servo (posición ON)
+  Serial.println("Switch en ON...");
+  onSwitch(); 
+
+  delay(1000);     // Abre servo (posición ON)
+  igniteMotor(); // Enciende el cerillo electronico
+  delay(1000);
+  resetIgniterSafeState(); // Apaga la señal del pin y cierra el circuito con el servo
+  delay(1000);
+  prepareIgniter(); // Gira el servomotor para habilitar el ignitor
+  igniteMotor(); // Enciende el cerillo electronico
+  
+
   delay(1000);                  // Espera 1 segundo
-  Serial.println("Cerrando switch...");
-  offSwitch();                // Cierra servo (posición OFF)
+  Serial.println("Switch en OFF...");
+  resetIgniterSafeState(); // Apaga la señal del pin y cierra el circuito con el servo
   delay(1000);
 
   setupADC();
