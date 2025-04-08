@@ -2,20 +2,17 @@
 #include "SDLogger.h"
 
 void setup() {
+  Serial.begin(115200);
+  Serial.println("Test Bank Initializing...");
   setupADC();
-  while(!setupSD(4)){
+  while(!setupSD(10)){
     Serial.println("Retrying...");
   }
-  initFile();
+  initFile("Time (ms), Force (N)");
 }
 
 void loop() {
-  if (handleConversion() == true && adcMeasurement > 50)
-  {
-    Serial.print("Lectura ADC:\t");
-    logToSD(String(adcMeasurement), true);
+  if (handleConversion() && isTestRunning){
+    logMeasurement();
   }
-
-  // delay 10mS
-  //delay(10);
 }

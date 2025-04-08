@@ -1,15 +1,19 @@
 #include "ADCSetup.h"
-#include <Wire.h>
-#include <Arduino.h>
 
 // constructor del ADS115 en el bus I2C con address 0x48 (Pin ADDR -> GND)
-extern ADS1115 ADS(0x48);
+ADS1115 ADS(0x48);
 
 // lectura del adc
-extern int16_t adcMeasurement = 0;
+int16_t adcMeasurement = 0;
 
 // bandera de interrupcion de conversion lista
-extern volatile bool conversionReady = false;
+volatile bool conversionReady = false;
+
+// instante de tiempo del inicio de la prueba
+unsigned long startTime = 0;
+
+// bandera para indicar si la prueba ha comenzado
+bool isTestRunning = false;
 
 void setupADC() {
   Serial.begin(115200);
@@ -65,8 +69,22 @@ bool handleConversion()
     conversionReady = false;
     // obtener la medicion del ADC
     adcMeasurement = ADS.getValue() + 43; // ajuste para centrar la lectura de ADC a cero (en reposo) *Falta restar peso del motor*
+    // Condición para iniciar cronómetro
+    if (!isTestRunning && adcMeasurement > TEST_TRESHOLD) {  
+      startTime = millis();  // Guarda el tiempo actual
+      isTestRunning = true;  // Marca que la prueba ha comenzado
+      Serial.println("Prueba iniciada.");
+    }
     // inidicar que ya se manejo la interrupcion
     return true;
   }
   return false; 
+}
+
+void printMeasurement() {
+    if (isTestRunning) {
+        unsigned long elapsedTime = millis() - startTime;  // Tiempo transcurrido en milisegundos
+        String logEntry = String(elapsedTime) + "," + /*String(WEIGHT(adcMeasurement)*9.81)*/String(adcMeasurement);//
+        Serial.println(logEntry);  // Mostrar la entrada en el monitor serie
+    }
 }
