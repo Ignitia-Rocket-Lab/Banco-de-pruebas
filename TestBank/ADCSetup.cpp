@@ -70,6 +70,7 @@ bool handleConversion()
     // obtener la medicion del ADC
     adcMeasurement = ADS.getValue() + 43; // ajuste para centrar la lectura de ADC a cero (en reposo) *Falta restar peso del motor*
     // Condición para iniciar cronómetro
+
     if (!isTestRunning && adcMeasurement > 50) {  
       startTime = millis();  // Guarda el tiempo actual
       isTestRunning = true;  // Marca que la prueba ha comenzado
@@ -79,4 +80,12 @@ bool handleConversion()
     return true;
   }
   return false; 
+}
+
+void printMeasurement() {
+    if (isTestRunning) {
+        unsigned long elapsedTime = millis() - startTime;  // Tiempo transcurrido en milisegundos
+        String logEntry = String(elapsedTime) + "," + /*String(WEIGHT(adcMeasurement)*9.81)*/String(adcMeasurement);//
+        Serial.println(logEntry);  // Mostrar la entrada en el monitor serie
+    }
 }
