@@ -70,7 +70,8 @@ bool handleConversion()
     // obtener la medicion del ADC
     adcMeasurement = ADS.getValue() + 43; // ajuste para centrar la lectura de ADC a cero (en reposo) *Falta restar peso del motor*
     // Condición para iniciar cronómetro
-    if (!isTestRunning && adcMeasurement > TEST_TRESHOLD) {  
+
+    if (!isTestRunning && adcMeasurement > 50) {  
       startTime = millis();  // Guarda el tiempo actual
       isTestRunning = true;  // Marca que la prueba ha comenzado
       Serial.println("Prueba iniciada.");
