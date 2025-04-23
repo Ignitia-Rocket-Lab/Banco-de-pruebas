@@ -84,7 +84,7 @@ bool handleConversion()
 void printMeasurement() {
     if (isTestRunning) {
         unsigned long elapsedTime = millis() - startTime;  // Tiempo transcurrido en milisegundos
-        String logEntry = String(elapsedTime) + "," + /*String(WEIGHT(adcMeasurement)*9.81)*/String(adcMeasurement);//
+        String logEntry = String(elapsedTime) + "," + String(WEIGHT(adcMeasurement)*9.81);//
         Serial.println(logEntry);  // Mostrar la entrada en el monitor serie
     }
 }

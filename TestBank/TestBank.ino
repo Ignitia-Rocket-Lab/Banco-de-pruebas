@@ -12,7 +12,7 @@ void setup() {
 }
 
 void loop() {
-  if (handleConversion() && isTestRunning){
+  if (handleConversion() && adcMeasurement > TEST_TRESHOLD){
     logMeasurement();
   }
 }
