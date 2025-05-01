@@ -14,8 +14,8 @@
 #define IRQ_PIN 3
 
 // --- Direcciones ---
-// Direcciones para la comunicación. "1Node" será la dirección de escucha del nodo 0
-// y la dirección de escritura del nodo 1. "2Node" será la dirección de escucha
+// Direcciones para la comunicación. "TBdir" será la dirección de escucha del nodo 0
+// y la dirección de escritura del nodo 1. "TRdir" será la dirección de escucha
 // del nodo 1 y la dirección de escritura del nodo 0.
 extern const byte addresses[2][6];
 
@@ -28,6 +28,41 @@ extern const byte addresses[2][6];
 #define TRANSMITTER 1
 #define CURRENT_DEVICE TESTBANK
 #define RADIO_CHANNEL 76
+
+// --- Tipos de Mensaje (Primer Byte del Payload) ---
+enum MessageType : uint8_t {
+  MSG_TYPE_INVALID       = 0x00, // Para indicar un error o no inicializado
+  MSG_TYPE_STATE_UPDATE  = 0x01, // El remitente informa su estado FSM actual
+  MSG_TYPE_DATA_REPORT   = 0x02, // El remitente envía un valor de datos/diagnóstico
+  MSG_TYPE_COMMAND       = 0x03  // El remitente envía una orden al receptor
+};
+
+// --- Estados de la Máquina de Estados (FSM) ---
+//     Asegurarse que estos valores coincidan EXACTAMENTE con tu enum State
+//     en el código de la FSM principal.
+enum FsmState : uint8_t {
+  STATE_DIAG          = 0, // Valor numérico de Diag
+  STATE_FAILSAFE      = 1, // Valor numérico de FailSafe
+  STATE_IGNITION_WAIT = 2, // Valor numérico de IgnitionWait
+  STATE_ARMED_WAIT    = 3, // Valor numérico de ArmedWait
+  STATE_ACQ           = 4, // Valor numérico de ACQ
+  STATE_SUCESS        = 5  // Valor numérico de Sucess
+};
+
+// --- Subtipos para DATA_REPORT (Segundo Byte si MSG_TYPE es DATA_REPORT) ---
+enum DataSubtype : uint8_t {
+  DATA_SUBTYPE_ADC_VALUE     = 0x10, // Siguientes 2 bytes son int16_t del ADC
+  DATA_SUBTYPE_SD_STATUS     = 0x11, // Siguiente byte es estado SD (0=OK, 1=NoInit, 2=FileErr, etc.)
+  DATA_SUBTYPE_DIAG_RESULT   = 0x12, // Siguiente byte es resultado Diag (0=Fail, 1=Pass)
+};
+
+// --- Códigos para COMMAND (Segundo Byte si MSG_TYPE es COMMAND) ---
+enum CommandCode : uint8_t {
+  CMD_GOTO_ARMED            = 0xA0, // Comando para ir a ArmedWait (si aplica)
+  CMD_ABORT                 = 0xA1, // Comando para Abortar y volver a IgnitionWait
+  CMD_REQUEST_DIAGNOSTICS   = 0xB0, // Comando para solicitar un diagnóstico
+  
+};
 
 // --- Variables Globales del Driver ---
 extern RF24 radio; // El objeto principal de la librería RF24
@@ -85,5 +120,16 @@ uint8_t readDataSimpleRF24();
  */
 void rf24InterruptHandler();
 
+bool sendAdcData(int16_t adcValue);
+
+bool sendSdStatus(uint8_t sdStatusCode);
+
+bool sendDiagResult(bool pass);
+
+bool sendRfCommand(CommandCode command);
+
+bool sendStateUpdate(FsmState currentState);
+
+void processReceivedMessage(uint8_t* payload, uint8_t len);
 
 #endif //RFCONTROLLER_H

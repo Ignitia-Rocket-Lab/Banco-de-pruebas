@@ -1,4 +1,4 @@
-#include "SimpleRF24.h"
+#include "RFController.h"
 
 // --- Definición de Variables Globales ---
 
@@ -50,8 +50,8 @@ bool setupRF24(bool radioId, rf24_pa_dbm_e paLevel, rf24_datarate_e dataRate) {
     radio.enableDynamicPayloads();
 
     // 5. Configurar Interrupción (IRQ)
-    pinMode(RF24_IRQ_PIN, INPUT_PULLUP); // Configurar pin de IRQ como entrada con pull-up
-    attachInterrupt(digitalPinToInterrupt(RF24_IRQ_PIN), rf24InterruptHandler, FALLING); // Adjuntar ISR
+    pinMode(IRQ_PIN, INPUT_PULLUP); // Configurar pin de IRQ como entrada con pull-up
+    attachInterrupt(digitalPinToInterrupt(IRQ_PIN), rf24InterruptHandler, FALLING); // Adjuntar ISR
 
     // Enmascarar interrupciones: Queremos que IRQ se active SOLO en RX_DR (Recepción de Datos Lista)
     // maskIRQ(TX_DS_IRQ, TX_FAIL_IRQ, RX_DR_IRQ) -> 1=ignorar, 0=activar
@@ -65,7 +65,7 @@ bool setupRF24(bool radioId, rf24_pa_dbm_e paLevel, rf24_datarate_e dataRate) {
     Serial.print(F(" - Writing to: ")); Serial.println((char*)rf24_addresses[!radioId]);
     Serial.print(F(" - Listening on: ")); Serial.println((char*)rf24_addresses[radioId]);
     Serial.print(F(" - Channel: ")); Serial.println(radio.getChannel());
-    Serial.print(F(" - IRQ Pin: ")); Serial.println(RF24_IRQ_PIN);
+    Serial.print(F(" - IRQ Pin: ")); Serial.println(IRQ_PIN);
     // radio.printDetails(); // Descomentar para debugging detallado
 
     return true;
@@ -195,4 +195,162 @@ void rf24InterruptHandler() {
     // Si por alguna razón se activara una interrupción de TX (aunque estén enmascaradas),
     // whatHappened() ya las habría limpiado. No necesitamos hacer nada más aquí para TX.
     // Evitar poner Serial.print() u otras operaciones lentas dentro de una ISR.
+}
+
+/** @brief Envía una lectura del ADC. */
+bool sendAdcData(int16_t adcValue) {
+  uint8_t payload[1 + 1 + sizeof(int16_t)]; // Tipo + Subtipo + Datos
+  payload[0] = MSG_TYPE_DATA_REPORT;
+  payload[1] = DATA_SUBTYPE_ADC_VALUE;
+  memcpy(&payload[2], &adcValue, sizeof(int16_t)); // Copia los bytes del int16
+  Serial.print(F("Data Report: ADC=")); Serial.println(adcValue);
+  return sendDataRF24(payload, sizeof(payload));
+}
+
+/** @brief Envía el estado de la SD (simplificado). */
+bool sendSdStatus(uint8_t sdStatusCode) {
+  uint8_t payload[3]; // Tipo + Subtipo + Status
+  payload[0] = MSG_TYPE_DATA_REPORT;
+  payload[1] = DATA_SUBTYPE_SD_STATUS;
+  payload[2] = sdStatusCode; // 0=OK, 1=Error, etc.
+  Serial.print(F("Data Report: SD Status=")); Serial.println(sdStatusCode);
+  return sendDataRF24(payload, sizeof(payload));
+}
+
+/** @brief Envía el resultado del diagnóstico general. */
+bool sendDiagResult(bool pass) {
+    uint8_t payload[3]; // Tipo + Subtipo + Resultado
+    payload[0] = MSG_TYPE_DATA_REPORT;
+    payload[1] = DATA_SUBTYPE_DIAG_RESULT;
+    payload[2] = (pass ? 1 : 0);
+    Serial.print(F("Data Report: Diag Result=")); Serial.println(pass ? "PASS" : "FAIL");
+    return sendDataRF24(payload, sizeof(payload));
+}
+
+
+/** @brief Envía un comando específico. */
+bool sendRfCommand(CommandCode command) {
+  uint8_t payload[2];
+  payload[0] = MSG_TYPE_COMMAND;
+  payload[1] = command;
+  Serial.print(F("Command: ")); Serial.println(command, HEX);
+  return sendDataRF24(payload, sizeof(payload));
+}
+
+/** @brief Envía el estado actual de la FSM. */
+bool sendStateUpdate(FsmState currentState) {
+  uint8_t payload[2];
+  payload[0] = MSG_TYPE_STATE_UPDATE;
+  payload[1] = currentState; // El valor numérico del estado
+  Serial.print(F("State Update: FSM State=")); Serial.println(currentState);
+  return sendDataRF24(payload, sizeof(payload));
+}
+
+void processReceivedMessage(uint8_t* payload, uint8_t len) {
+  if (len == 0 || payload == nullptr) {
+    Serial.println(F("RF RX: Intento de procesar mensaje vacío/nulo."));
+    return;
+  }
+
+  MessageType msgType = (MessageType)payload[0];
+  Serial.print(F("RF RX: Msg Type=0x")); Serial.print(msgType, HEX);
+  Serial.print(F(" Len=")); Serial.println(len);
+
+  switch (msgType) {
+    case MSG_TYPE_STATE_UPDATE:
+      if (len == 2) {
+        FsmState receivedState = (FsmState)payload[1];
+        Serial.print(F("  State Update Received: ")); Serial.println(receivedState);
+        // Actualizar alguna variable local que rastree el estado del otro dispositivo
+        // displayRemoteState(receivedState); // Función ficticia
+      } else {
+        Serial.println(F("  Error: Tamaño incorrecto para State Update."));
+      }
+      break;
+
+    case MSG_TYPE_DATA_REPORT:
+      if (len >= 2) { // Necesita al menos Tipo + Subtipo
+        DataSubtype subType = (DataSubtype)payload[1];
+        Serial.print(F("  Data Report Received. Subtype=0x")); Serial.println(subType, HEX);
+        switch (subType) {
+          case DATA_SUBTYPE_ADC_VALUE:
+            if (len == (1 + 1 + sizeof(int16_t))) { // Tipo+Subtipo+int16
+              int16_t adcValue;
+              memcpy(&adcValue, &payload[2], sizeof(int16_t));
+              Serial.print(F("    ADC Value: ")); Serial.println(adcValue);
+              // Usa el valor ADC recibido
+            } else {
+               Serial.println(F("    Error: Tamaño incorrecto para ADC Value."));
+            }
+            break;
+          case DATA_SUBTYPE_SD_STATUS:
+             if (len == 3) { // Tipo+Subtipo+Status(1 byte)
+                uint8_t sdStatus = payload[2];
+                Serial.print(F("    SD Status Code: ")); Serial.println(sdStatus);
+                // Interpreta el código de estado SD
+             } else {
+                Serial.println(F("    Error: Tamaño incorrecto para SD Status."));
+             }
+             break;
+           case DATA_SUBTYPE_DIAG_RESULT:
+             if (len == 3) { // Tipo+Subtipo+Resultado(1 byte)
+                bool diagPassed = (payload[2] == 1);
+                Serial.print(F("    Diag Result: ")); Serial.println(diagPassed ? "PASS" : "FAIL");
+                // Actúa según el resultado del diagnóstico remoto
+             } else {
+                Serial.println(F("    Error: Tamaño incorrecto para Diag Result."));
+             }
+             break;
+          // Añade cases para otros DATA_SUBTYPE
+          default:
+            Serial.println(F("    Error: Subtipo de datos desconocido."));
+            break;
+        }
+      } else {
+         Serial.println(F("  Error: Tamaño insuficiente para Data Report."));
+      }
+      break;
+
+    case MSG_TYPE_COMMAND:
+      if (len == 2) {
+        CommandCode receivedCommand = (CommandCode)payload[1];
+        Serial.print(F("  Command Received: 0x")); Serial.println(receivedCommand, HEX);
+        // Actuar según el comando recibido
+        switch(receivedCommand) {
+            case CMD_GOTO_ARMED:
+                Serial.println(F("    Executing: Go to Armed Wait"));
+                // Llama a la función que cambia el estado local si es aplicable
+                // transitionToState(STATE_ARMED_WAIT); // Función ficticia
+                break;
+            case CMD_ABORT:
+                Serial.println(F("    Executing: Abort to Ignition Wait"));
+                // transitionToState(STATE_IGNITION_WAIT); // Función ficticia
+                break;
+            case CMD_REQUEST_DIAGNOSTICS:
+                 Serial.println(F("    Executing: Run Diagnostics on Request"));
+                 // bool diagRes = performDiagnostics(); // Ejecuta diag localmente
+                 // sendDiagResult(diagRes); // Envía el resultado de vuelta
+                 break;
+            // Añade cases para otros CommandCode
+            default:
+                 Serial.println(F("    Warning: Comando desconocido recibido."));
+                 break;
+        }
+      } else {
+        Serial.println(F("  Error: Tamaño incorrecto para Command."));
+      }
+      break;
+
+    default:
+      Serial.println(F("  Error: Tipo de mensaje desconocido o inválido."));
+      // Podrías imprimir los bytes recibidos en HEX para depurar
+      Serial.print(F("    Raw Payload (HEX): "));
+      for(int i=0; i<len; i++){
+          if(payload[i] < 0x10) Serial.print("0");
+          Serial.print(payload[i], HEX);
+          Serial.print(" ");
+      }
+      Serial.println();
+      break;
+  }
 }

@@ -55,14 +55,14 @@ bool setupSD(int chipSelect) {
 
     // Intentar inicializar la tarjeta SD usando el pin CS especificado
     if (!SD.begin(chipSelect)) {
-        Serial.println("Initialization failed!");
+        Serial.println(F("Initialization failed!"));
         return false;
     }
 
     // Configurar el pin del botón como entrada (su uso dependerá del sketch principal)
     pinMode(BUTTON_PIN, INPUT);
 
-    Serial.println("Initialization done.");
+    Serial.println(F("Initialization done."));
     bufferIndex = 0;          // Asegurarse de que el índice del buffer esté a 0 al inicio.
     lastFlushTime = millis(); // Inicializar el tiempo del último flush al momento actual.
     return true;
@@ -74,7 +74,6 @@ bool setupSD(int chipSelect) {
  */
 void filenameGen(void) {
     int counter = 1;
-    String filenameBase = "log";
     String filenameExt = ".csv";
     String currentFilename;
 
@@ -87,6 +86,8 @@ void filenameGen(void) {
             logFilename = F("error_log.csv");
             return;
         }
+        currentFilename = "log" + String(counter) + filenameExt;
+        counter ++;
     } while (SD.exists(currentFilename.c_str())); // SD.exists() verifica si un archivo/directorio existe
     logFilename = currentFilename; // Almacenar el nombre encontrado en la variable global
     //Serial.print(F("Generated unique filename: "));
@@ -102,10 +103,12 @@ bool initFile(const String& header) {
 
     // Abrir el archivo en modo escritura. FILE_WRITE abre para escribir al final,
     // o crea el archivo si no existe.
+    Serial.print(F("Filename generated: "));
+    Serial.println(logFilename);
     logFile = SD.open(logFilename, FILE_WRITE);
     
     if (!logFile) { // Verificar si la apertura falló
-        Serial.println("Error opening the file");
+        Serial.println(F("Error opening the file"));
         return false;
     }
     
@@ -115,18 +118,14 @@ bool initFile(const String& header) {
     // Es crucial hacer flush después de escribir el encabezado para asegurar
     // que se guarde inmediatamente, especialmente si el programa pudiera
     // fallar poco después.
-    if (!logFile.flush()) {
-       Serial.println(F("Error flushing header to file."));
-       logFile.close(); // Intentar cerrar el archivo si el flush falla
-       return false;
-    }
+    logFile.flush();
     
     Serial.print(F("Log file opened: "));
     Serial.println(logFilename);
     //Serial.print(F("Header written: "));
     //Serial.println(header);
     
-     bufferIndex = 0;          // Resetear el índice del buffer al abrir un nuevo archivo.
+    bufferIndex = 0;          // Resetear el índice del buffer al abrir un nuevo archivo.
     lastFlushTime = millis();  // Resetear el tiempo del último flush.
     return true;
 }
@@ -203,7 +202,7 @@ void logMeasurement() {
 bool flushBuffer() {
   // Verificar si el archivo está abierto
     if (!logFile) {
-        Serial.println("Error: File is not open.");
+        Serial.println(F("Error: File is not open."));
         return false;
     }
 
@@ -213,12 +212,7 @@ bool flushBuffer() {
 
         // Forzar la escritura física al medio (importante para asegurar datos)
         // ¡El flush puede tardar tiempo! Especialmente en tarjetas lentas.
-        if (!logFile.flush()) {
-            Serial.println(F("Error flushing file cache to SD card. Data might be cached but not fully saved."));
-            // Esto es menos grave que un error de write, pero aún así es un problema.
-            // Considerar cómo manejarlo. Por ahora, retornamos fallo.
-            return false;
-        }
+        logFile.flush();
 
         // Si la escritura y el flush fueron exitosos, reiniciar el índice del buffer
         bufferIndex = 0;
