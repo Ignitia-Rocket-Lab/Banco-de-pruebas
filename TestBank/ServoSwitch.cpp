@@ -55,11 +55,10 @@ int getServoAngle() {
 bool servoProcessSerialCommand() {
   if (Serial.available() > 0) {
     int angle = Serial.parseInt();
-    if (angle >= 0 && angle <= 180) {
+    if (angle > 0 && angle <= 180) {
       moveServo(angle);
       return true;
     }
-    while (Serial.available() > 0) Serial.read();  // Limpiar buffer
   }
   return false;
 }

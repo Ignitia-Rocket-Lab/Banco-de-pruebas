@@ -17,35 +17,34 @@ void setup() {
   // Prueba de LEDs con delays para verificación visual
   Serial.println("Encendiendo LED derecho");
   CASO2;
-  delay(3000);
-  Serial.println("Encendiendo LED izquierdo");
-  CASO3;
-  delay(3000);
-  Serial.println("Encendiendo ambos LEDs");
-  CASO4;
-  delay(3000);
+  delay(500);
   Serial.println("Apagando todos los LEDs");
   CASO1;
-  delay(3000);
+  delay(500);
+  Serial.println("Encendiendo LED derecho");
+  CASO2;
+  delay(500);
+  Serial.println("Apagando todos los LEDs");
+  CASO1;
+  delay(500);
+  Serial.println("Encendiendo LED derecho");
+  CASO2;
+  delay(500);
+  Serial.println("Apagando todos los LEDs");
+  CASO1;
+  delay(500);
 
   
   setupServo();                 // Inicializa servo
+  offSwitch(); 
   setupIgniter(); 
   // 2. Abrir y cerrar servo (una vez cada uno)
   Serial.println("Switch en ON...");
   onSwitch(); 
 
-  delay(1000);     // Abre servo (posición ON)
+  delay(5000);     // Abre servo (posición ON)
   igniteMotor(); // Enciende el cerillo electronico
-  delay(1000);
-  resetIgniterSafeState(); // Apaga la señal del pin y cierra el circuito con el servo
-  delay(1000);
-  prepareIgniter(); // Gira el servomotor para habilitar el ignitor
-  igniteMotor(); // Enciende el cerillo electronico
-  
-
-  delay(1000);                  // Espera 1 segundo
-  Serial.println("Switch en OFF...");
+  delay(3000);
   resetIgniterSafeState(); // Apaga la señal del pin y cierra el circuito con el servo
   delay(1000);
 
@@ -70,15 +69,12 @@ void setup() {
 
 
 // Loop para probar posiciones del servo
-//void loop() {
-//    if (servoProcessSerialCommand()) {
-//    logToSD("Servo movido a: " + String(currentAngle), true);
-//  }
-//}
+void loop() {
+}
 
 //Loop para probar posiciones del servo
-void loop() {
-  if (ledsProcessSerialCommand()) {
-    logToSD("LEDs cambiaron de estado: " + getLEDStateString());
-  }
-}
+//void loop() {
+//  if (ledsProcessSerialCommand()) {
+//    logToSD("LEDs cambiaron de estado: " + getLEDStateString());
+//  }
+//}

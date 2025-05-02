@@ -5,8 +5,8 @@
 
 // Constantes
 #define SERVO_PIN 5           // Pin del servo
-#define ANGLE_ON 66         // Ángulo para "ON" (ajustable)
-#define ANGLE_OFF 31        // Ángulo para "OFF" (ajustable)
+#define ANGLE_ON 31         // Ángulo para "ON" (ajustable)
+#define ANGLE_OFF 66        // Ángulo para "OFF" (ajustable)
 
 // Variables globales (externas)
 extern Servo servo;           // Objeto Servo
