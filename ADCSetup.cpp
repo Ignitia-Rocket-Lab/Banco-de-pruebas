@@ -1,27 +1,27 @@
 #include "ADCSetup.h"
+#include <Wire.h>
+#include <Arduino.h>
+
+// Constantes configurables
+const uint8_t INTERRUPT_PIN = 2;         
+const uint32_t SERIAL_BAUD_RATE = 115200;
 
 // constructor del ADS115 en el bus I2C con address 0x48 (Pin ADDR -> GND)
-ADS1115 ADS(0x48);
+extern ADS1115 ADS(0x48);
 
 // lectura del adc
-int16_t adcMeasurement = 0;
+extern int16_t adcMeasurement = 0;
 
 // bandera de interrupcion de conversion lista
-volatile bool conversionReady = false;
-
-// instante de tiempo del inicio de la prueba
-unsigned long startTime = 0;
-
-// bandera para indicar si la prueba ha comenzado
-bool isTestRunning = false;
+extern volatile bool conversionReady = false;
 
 void setupADC() {
-  Serial.begin(115200);
+  Serial.begin(SERIAL_BAUD_RATE);
   Wire.begin();
 
   // ligar el pin 2 con la interrupcion del ADC y el interrupt handler
-  pinMode(2, INPUT_PULLUP);
-  attachInterrupt(digitalPinToInterrupt(2), adsInterruptHandler, RISING);
+  pinMode(INTERRUPT_PIN, INPUT_PULLUP);
+  attachInterrupt(digitalPinToInterrupt(INTERRUPT_PIN), adsInterruptHandler, RISING);
 
   // inicializar ads y checar conexión
   ADS.begin();
@@ -69,23 +69,8 @@ bool handleConversion()
     conversionReady = false;
     // obtener la medicion del ADC
     adcMeasurement = ADS.getValue() + 43; // ajuste para centrar la lectura de ADC a cero (en reposo) *Falta restar peso del motor*
-    // Condición para iniciar cronómetro
-
-    if (!isTestRunning && adcMeasurement > 50) {  
-      startTime = millis();  // Guarda el tiempo actual
-      isTestRunning = true;  // Marca que la prueba ha comenzado
-      Serial.println("Prueba iniciada.");
-    }
     // inidicar que ya se manejo la interrupcion
     return true;
   }
   return false; 
-}
-
-void printMeasurement() {
-    if (isTestRunning) {
-        unsigned long elapsedTime = millis() - startTime;  // Tiempo transcurrido en milisegundos
-        String logEntry = String(elapsedTime) + "," + /*String(WEIGHT(adcMeasurement)*9.81)*/String(adcMeasurement);//
-        Serial.println(logEntry);  // Mostrar la entrada en el monitor serie
-    }
 }
