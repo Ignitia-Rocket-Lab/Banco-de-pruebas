@@ -16,19 +16,19 @@ void setup() {
   setupLEDs();
   // Prueba de LEDs con delays para verificación visual
   Serial.println("Encendiendo LED derecho");
-  CASO2;
+  CASO4;
   delay(500);
   Serial.println("Apagando todos los LEDs");
   CASO1;
   delay(500);
   Serial.println("Encendiendo LED derecho");
-  CASO2;
+  CASO4;
   delay(500);
   Serial.println("Apagando todos los LEDs");
   CASO1;
   delay(500);
   Serial.println("Encendiendo LED derecho");
-  CASO2;
+  CASO4;
   delay(500);
   Serial.println("Apagando todos los LEDs");
   CASO1;
