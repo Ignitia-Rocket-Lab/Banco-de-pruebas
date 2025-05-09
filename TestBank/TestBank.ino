@@ -1,62 +1,6 @@
+#include "RFController.h"
 #include "ADCSetup.h"
 #include "SDLogger.h"
-<<<<<<< Updated upstream
-#include "ServoSwitch.h"
-#include "Leds.h"
-#include "Igniter.h"
-
-// Definicion de usos de leds y estados
-#define CASO1 turnOff();
-#define CASO2 turnOnRight();
-#define CASO3 turnOnLeft();
-#define CASO4 turnOnAll();
-
-void setup() {
-  Serial.println("Iniciando sistema...");
-
-  setupLEDs();
-  // Prueba de LEDs con delays para verificación visual
-  Serial.println("Encendiendo LED derecho");
-  CASO4;
-  delay(500);
-  Serial.println("Apagando todos los LEDs");
-  CASO1;
-  delay(500);
-  Serial.println("Encendiendo LED derecho");
-  CASO4;
-  delay(500);
-  Serial.println("Apagando todos los LEDs");
-  CASO1;
-  delay(500);
-  Serial.println("Encendiendo LED derecho");
-  CASO4;
-  delay(500);
-  Serial.println("Apagando todos los LEDs");
-  CASO1;
-  delay(500);
-
-  
-  setupServo();                 // Inicializa servo
-  offSwitch(); 
-  setupIgniter(); 
-  // 2. Abrir y cerrar servo (una vez cada uno)
-  Serial.println("Switch en ON...");
-  onSwitch(); 
-
-  delay(5000);     // Abre servo (posición ON)
-  igniteMotor(); // Enciende el cerillo electronico
-  delay(3000);
-  resetIgniterSafeState(); // Apaga la señal del pin y cierra el circuito con el servo
-  delay(1000);
-
-  setupADC();
-  while(!setupSD()){
-    Serial.println("Retrying...");
-  } 
-  initFile();
-}
-=======
-#include "RFController.h"
 #include "ServoSwitch.h"
 #include "Leds.h"
 #include "Igniter.h"
@@ -170,6 +114,23 @@ bool performDiagnostics() {
     return diagOk;
 }
 
+bool checkGoToDiagSignal() {
+    if(isDataAvailable()){
+        uint8_t size = readDataSimpleRF24();
+        if (size == 2){
+            MessageType msgType = (MessageType)payload[0];
+            if(msgType == MSG_TYPE_COMMAND){
+                CommandCode receivedCommand = (CommandCode)payload[1];
+                if (receivedCommand == CMD_GOTO_DIAG){
+                    Serial.println(F("    Executing: Go to Armed Wait"));
+                    return true;
+                } else{ Serial.println(F("  Error: Unexpected command received")); }
+            } else{ Serial.println(F("  Error: Message is not a Command Type")); }
+        } else{ Serial.println(F("  Error: Size does not match de required lenght")); }
+    } else{ Serial.println(F("  Error: No data available on the buffer")); }
+    return false;
+}
+
 bool checkInitialSignal() {
     if(isDataAvailable()){
         uint8_t size = readDataSimpleRF24();
@@ -244,38 +205,14 @@ void setup() {
     setupIgniter();
 
     setupADC();
-    while(!setupSD(10)){
+    while(!setupSD()){
         Serial.println(F("Retrying..."));
     }
     initFile("Time (ms), Force (N)"); 
-  }
->>>>>>> Stashed changes
-
-//Loop de funcionamientos de ADS y SDLogger
-//void loop() {
-  //if (handleConversion() == true && adcMeasurement > 50)
-  //  Serial.print("Lectura ADC:\t");
-  //  logToSD(String(adcMeasurement), true);
-  //}
-
-
-  // delay 10mS
-  //delay(10);
-//}
-
+}
 
 // Loop para probar posiciones del servo
 void loop() {
-<<<<<<< Updated upstream
-}
-
-//Loop para probar posiciones del servo
-//void loop() {
-//  if (ledsProcessSerialCommand()) {
-//    logToSD("LEDs cambiaron de estado: " + getLEDStateString());
-//  }
-//}
-=======
   switch (currentState) {
     case Init:
       // LEDs con delays para verificación visual
@@ -292,10 +229,9 @@ void loop() {
       CASO1;
       delay(500);
       payload_Size = readDataSimpleRF24();
-      if (payload_Size != 0){
+      if (checkGoToDiagSignal()) {
         currentState = Diag;
       }
-      break;
       
     case Diag:
       if (performDiagnostics()) {
@@ -356,4 +292,3 @@ void loop() {
 
     } // Fin del switch
 } // Fin del loop 
->>>>>>> Stashed changes

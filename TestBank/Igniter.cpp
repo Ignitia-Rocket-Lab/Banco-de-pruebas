@@ -5,16 +5,13 @@ bool  currentIgniterState;
 
 // Inicializa los pines necesarios para el ignitor 
 void setupIgniter(){
-<<<<<<< Updated upstream
   pinMode(IGNITER, OUTPUT);
   digitalWrite(IGNITER, LOW);
-  
-=======
+
   Serial.print(F("setupIGNITER: Initializing igniter... ")); delay(100);
   pinMode(IGNITER, OUTPUT);
   digitalWrite(IGNITER, LOW);
   Serial.println(F("Success")); delay(100);
->>>>>>> Stashed changes
 } 
 
 // Enciende el cerillo electronico

@@ -8,13 +8,10 @@ int currentAngle = 0;
 
 // Inicialización
 void setupServo() {
-<<<<<<< Updated upstream
   servo.attach(SERVO_PIN);
-=======
   Serial.print(F("setupSD: Initializing SD... ")); delay(100);
   servo.attach(SERVO_PIN);
   Serial.println(F("Success")); delay(100);
->>>>>>> Stashed changes
 }
 
 // Mover servo a un ángulo específico

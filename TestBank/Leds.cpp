@@ -3,18 +3,12 @@
 LEDState currentLEDState = LED_OFF;
 
 void setupLEDs() {
-<<<<<<< Updated upstream
-=======
   Serial.print(F("setupLEDS: Initializing leds... ")); delay(100);
->>>>>>> Stashed changes
   pinMode(LED_LEFT, OUTPUT);
   pinMode(LED_RIGHT, OUTPUT);
   digitalWrite(LED_LEFT, LOW);
   digitalWrite(LED_RIGHT, LOW);
-<<<<<<< Updated upstream
-=======
   Serial.println(F("Success")); delay(100);
->>>>>>> Stashed changes
 }
 
 void setLEDState(LEDState state) {
