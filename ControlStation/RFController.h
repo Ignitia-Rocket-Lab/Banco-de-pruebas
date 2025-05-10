@@ -26,7 +26,6 @@ extern const byte addresses[2][6];
 // Selector del dispositivo para realizar las configuraciones adecuadas
 #define TESTBANK 0
 #define TRANSMITTER 1
-#define CURRENT_DEVICE TESTBANK
 #define RADIO_CHANNEL 76
 
 // --- Tipos de Mensaje (Primer Byte del Payload) ---
@@ -60,10 +59,10 @@ enum DataSubtype : uint8_t {
 
 // --- Códigos para COMMAND (Segundo Byte si MSG_TYPE es COMMAND) ---
 enum CommandCode : uint8_t {
-  CMD_GOTO_DIAG             = 0xB0, // Comando para ir a ArmedWait (si aplica)
+  CMD_GOTO_DIAG_WAIT        = 0xB0, // Comando para ir a DiagWait (si aplica)
   CMD_GOTO_ARMED            = 0xA0, // Comando para ir a ArmedWait (si aplica)
   CMD_ABORT                 = 0xA1, // Comando para Abortar y volver a IgnitionWait
-  CMD_REQUEST_DIAGNOSTICS   = 0xB1, // Comando para solicitar un diagnóstico
+  CMD_REQUEST_DIAGNOSTICS   = 0xB1, // Comando para solicitar un diagnóstico
 };
 
 
