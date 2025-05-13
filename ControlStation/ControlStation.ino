@@ -2,6 +2,9 @@
 
 uint8_t payload[RF24_MAX_PAYLOAD_SIZE];
 uint8_t payload_Size;
+bool waitingForResponse = false; // Bandera para indicar si estamos esperando una respuesta
+unsigned long responseTimeout = 0;  // Tiempo límite para la respuesta (en milisegundos)
+const unsigned long RESPONSE_TIMEOUT_MS = 10000; // Por ejemplo, 10 segundos de timeout
 
 // --- Configuración Inicial ---
 void setup() {
@@ -14,20 +17,28 @@ void setup() {
     delay(1000);
   }
   Serial.println(F("RF24 setup complete."));
-  printCommandMenu(); // Imprime el menú de comandos al inicio
+  printCommandMenu(); // Vuelve a imprimir el menú
 }
 
 void loop() {
+  
   if (Serial.available() > 0) {
     int command = Serial.parseInt();
-    processCommand(command);
-    Serial.println();
-    printCommandMenu(); // Vuelve a imprimir el menú
+    sendCommand(command);
+      // Manejar la recepción de mensajes y el timeout
+  if (isDataAvailable()) {
+    payload_Size = readDataSimpleRF24();
+    processReceivedMessage(payload, payload_Size);
+    waitingForResponse = false; // Ya no estamos esperando
+  } else if (waitingForResponse && millis() - responseTimeout > RESPONSE_TIMEOUT_MS) {
+    Serial.println(F("Response Timeout! No response received."));
+    waitingForResponse = false; // Se acabó el tiempo de espera
   }
-  delay(100);
+    Serial.println();
+  }
 }
 
-void processCommand(int command) {
+void sendCommand(int command) {
   CommandCode commandToSend;
   bool success = false;
 
@@ -52,9 +63,9 @@ void processCommand(int command) {
   success = sendRfCommand(commandToSend);
 
   if (success) {
-    Serial.println(F("Command sent successfully. Waiting for ACK..."));
-    delay(1000); // Simulate waiting for ACK (replace with proper ACK handling)
-    Serial.println(F("ACK received (or timeout). Ready for next command."));
+    Serial.println(F("Command sent successfully. Waiting for response..."));
+    waitingForResponse = true;           // Esperando una respuesta
+    responseTimeout = millis();          // Guarda el tiempo en que se envió el comando
   } else {
     Serial.println(F("Failed to send command. Please try again."));
   }
