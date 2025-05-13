@@ -26,16 +26,16 @@ void loop() {
     int command = Serial.parseInt();
     sendCommand(command);
       // Manejar la recepción de mensajes y el timeout
-  if (isDataAvailable()) {
-    payload_Size = readDataSimpleRF24();
-    processReceivedMessage(payload, payload_Size);
-    waitingForResponse = false; // Ya no estamos esperando
-  } else if (waitingForResponse && millis() - responseTimeout > RESPONSE_TIMEOUT_MS) {
-    Serial.println(F("Response Timeout! No response received."));
-    waitingForResponse = false; // Se acabó el tiempo de espera
-  }
-    Serial.println();
-  }
+    if (isDataAvailable()) {
+      payload_Size = readDataSimpleRF24();
+      processReceivedMessage(payload, payload_Size);
+      waitingForResponse = false; // Ya no estamos esperando
+    } else if (waitingForResponse && millis() - responseTimeout > RESPONSE_TIMEOUT_MS) {
+      Serial.println(F("Response Timeout! No response received."));
+      waitingForResponse = false; // Se acabó el tiempo de espera
+    }
+      Serial.println();
+    }
 }
 
 void sendCommand(int command) {
