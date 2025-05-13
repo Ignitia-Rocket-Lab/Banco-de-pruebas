@@ -173,8 +173,8 @@ bool logToSD(const String& data) {
  * @note Esta función depende de las variables globales `isTestRunning`, `startTime`,
  *       `adcMeasurement` y la macro `WEIGHT` definidas externamente (probablemente en ADCSetup).
  */
-void logMeasurement() {
-  // Solo registrar si la bandera isTestRunning (del módulo ADC) está activa
+bool logMeasurement() {
+    // Solo registrar si la bandera isTestRunning (del módulo ADC) está activa
     if (isTestRunning) {
         // Calcular el tiempo transcurrido desde el inicio de la prueba
         unsigned long elapsedTime = millis() - startTime;
@@ -182,8 +182,9 @@ void logMeasurement() {
         // Calcular el valor procesado (peso * gravedad en este caso)
         float calculatedValue = WEIGHT(adcMeasurement) * 9.81;
 
-        // Crear la cadena de log en formato "tiempo,valor"
-        String logEntry = String(elapsedTime) + "," + String(calculatedValue, 4); // 4 decimales de precisión
+        // Usar buffer fijo en lugar de String para eficiencia
+        char logEntry[40];
+        snprintf(logEntry, sizeof(logEntry), "%lu,%.4f", elapsedTime, calculatedValue);
 
         // Enviar la cadena formateada al buffer/SD
         if (!logToSD(logEntry)) {
@@ -193,7 +194,12 @@ void logMeasurement() {
         // Opcional: Imprimir también al monitor serie para depuración
         Serial.print(F("Logged: ")); // Comentar si es necesario
         Serial.println(logEntry);
-    }
+
+        if (calculatedValue < 0 && adcMeasurement < -5){
+            isTestRunning == false;
+        }
+  }
+  return true;
   // Si isTestRunning es false, no hace nada.
 }
 
