@@ -64,8 +64,8 @@ enum CommandCode : uint8_t {
   CMD_GOTO_ARMED            = 0xA0, // Comando para ir a ArmedWait (si aplica)
   CMD_ABORT                 = 0xA1, // Comando para Abortar y volver a IgnitionWait
   CMD_REQUEST_DIAGNOSTICS   = 0xB1, // Comando para solicitar un diagnóstico
-
-  CMD_END                   = 0xC1,
+  CMD_SUCCESS               = 0XC0, // Comando para terminar ACQ y pasar a Success
+  CMD_END                   = 0xC1, // Comando para cerrar SD y apagar
 };
 
 

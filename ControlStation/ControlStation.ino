@@ -26,14 +26,14 @@ void loop() {
     int command = Serial.parseInt();
     sendCommand(command);
       // Manejar la recepción de mensajes y el timeout
-    if (isDataAvailable()) {
+    /*if (isDataAvailable()) {
       payload_Size = readDataSimpleRF24();
       processReceivedMessage(payload, payload_Size);
       waitingForResponse = false; // Ya no estamos esperando
     } else if (waitingForResponse && millis() - responseTimeout > RESPONSE_TIMEOUT_MS) {
       Serial.println(F("Response Timeout! No response received."));
       waitingForResponse = false; // Se acabó el tiempo de espera
-    }
+    }*/
       Serial.println();
     }
 }
@@ -55,6 +55,12 @@ void sendCommand(int command) {
     case 3:
       commandToSend = CMD_REQUEST_DIAGNOSTICS;
       break;
+    case 4: 
+      commandToSend = CMD_SUCCESS;
+      break; 
+    case 5: 
+      commandToSend = CMD_END;
+      break; 
     default:
       Serial.println(F("Invalid command. Please try again."));
       return;
@@ -77,5 +83,7 @@ void printCommandMenu() {
   Serial.println(F("1: Go to ARMED"));
   Serial.println(F("2: ABORT"));
   Serial.println(F("3: Request DIAGNOSTICS"));
+  Serial.println(F("4: End TestBank ACQ"));
+  Serial.println(F("5: END"));
   Serial.print(F("Enter command number: "));
 }

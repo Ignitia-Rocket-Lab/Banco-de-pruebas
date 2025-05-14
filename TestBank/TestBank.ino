@@ -21,7 +21,7 @@ enum State {
   ArmedWait, // Estado de ArmedWait
   ACQ, // Estado de Ignition
 
-  Sucess, // Estado de Exito
+  Success, // Estado de Exito
   End   //Estado de prueba terminada
 };
 
@@ -207,7 +207,24 @@ bool checkAbortSignal() {
     return false;
 }
 
-bool checkEndTest() {
+bool checkSuccessSignal() {
+    if(isDataAvailable()){
+        uint8_t size = readDataSimpleRF24();
+        if (size == 2){
+            MessageType msgType = (MessageType)payload[0];
+            if(msgType == MSG_TYPE_COMMAND){
+                CommandCode receivedCommand = (CommandCode)payload[1];
+                if (receivedCommand == CMD_SUCCESS){
+                    Serial.println(F("    Executing: End of Test"));
+                    return true;
+                } else{ Serial.println(F("  Error: Unexpected command received")); }
+            } else{ Serial.println(F("  Error: Message is not a Command Type")); }
+        } else{ Serial.println(F("  Error: Size does not match de required lenght")); }
+    } //else{ Serial.println(F("  Error: No data available on the buffer 6")); }
+    return false;
+}
+
+bool checkEndSignal() {
     if(isDataAvailable()){
         uint8_t size = readDataSimpleRF24();
         if (size == 2){
@@ -374,10 +391,16 @@ void loop() {
         break; // Fin case ArmedWait
 
     case ACQ:
-      performAcquisition(); // Ejecuta la lógica de adquisición
+      if (checkSuccessSignal()) {
+              ignitionWaitEntryTime = millis(); // Reinicia timer de IgnitionWait al volver
+              currentState = Success;
+          }
+      else {
+        performAcquisition(); // Ejecuta la lógica de adquisición
+      }
       break; // Fin case ACQ
 
-    case Sucess:
+    case Success:
 
         Serial.println(F("Estado: Sucess - BUCLE DE ÉXITO"));
         CASO4;
@@ -392,7 +415,7 @@ void loop() {
         delay(2000);
         CASO1;   
 
-        if (checkEndTest()) {
+        if (checkEndSignal()) {
             currentState = End;
         }
 
