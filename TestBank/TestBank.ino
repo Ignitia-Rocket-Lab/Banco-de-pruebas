@@ -45,7 +45,7 @@ const unsigned long ARMED_WAIT_TIMEOUT = 10000; // 10 segundos
 // --- Funciones Placeholder ---
 /*
  * @brief Realiza diagnósticos de los periféricos principales (SD, ADC, RF).
- * @return true si todos los diagnósticos pasan, false si alguno falla.
+ * @return true si todos los diagnósticos pafsan, false si alguno falla.
 */
 bool performDiagnostics() {
 
@@ -132,7 +132,7 @@ bool checkGoToDiagSignal() {
                 } else{ Serial.println(F("  Error: Unexpected command received")); }
             } else{ Serial.println(F("  Error: Message is not a Command Type")); }
         } else{ Serial.println(F("  Error: Size does not match de required lenght")); }
-    } else{ Serial.println(F("  Error: No data available on the buffer")); }
+    } //else{ Serial.println(F("  Error: No data available on the buffer 1")); }
     return false;
 }
 
@@ -145,28 +145,31 @@ bool checkDiagnosticRequested() {
                 CommandCode receivedCommand = (CommandCode)payload[1];
                 if (receivedCommand == CMD_REQUEST_DIAGNOSTICS){
                     Serial.println(F("    Executing: Go to Diagnostics"));
+                    //sendACK();
                     return true;
                 } else{ Serial.println(F("  Error: Unexpected command received")); }
             } else{ Serial.println(F("  Error: Message is not a Command Type")); }
         } else{ Serial.println(F("  Error: Size does not match de required lenght")); }
-    } else{ Serial.println(F("  Error: No data available on the buffer")); }
+    } //else{ Serial.println(F("  Error: No data available on the buffer 2")); }
     return false;
 }
 
 bool checkInitialSignal() {
     if(isDataAvailable()){
+      Serial.print(F("  isDataAvailable(): "));
+      Serial.println(isDataAvailable());
         uint8_t size = readDataSimpleRF24();
         if (size == 2){
             MessageType msgType = (MessageType)payload[0];
             if(msgType == MSG_TYPE_COMMAND){
                 CommandCode receivedCommand = (CommandCode)payload[1];
-                if (receivedCommand == CMD_GOTO_ARMED){
+                if (receivedCommand == CMD_GOTO_DIAG_WAIT){
                     Serial.println(F("    Executing: Go to Wait Diag"));
                     return true;
                 } else{ Serial.println(F("  Error: Unexpected command received")); }
             } else{ Serial.println(F("  Error: Message is not a Command Type")); }
         } else{ Serial.println(F("  Error: Size does not match de required lenght")); }
-    } else{ Serial.println(F("  Error: No data available on the buffer")); }
+    } //else{ Serial.println(F("  Error: No data available on the buffer 3")); }
     return false;
 }
 
@@ -183,7 +186,7 @@ bool checkIgnitionSignal() {
                 } else{ Serial.println(F("  Error: Unexpected command received")); }
             } else{ Serial.println(F("  Error: Message is not a Command Type")); }
         } else{ Serial.println(F("  Error: Size does not match de required lenght")); }
-    } else{ Serial.println(F("  Error: No data available on the buffer")); }
+    } //else{ Serial.println(F("  Error: No data available on the buffer 4")); }
     return false;
 }
 
@@ -200,7 +203,7 @@ bool checkAbortSignal() {
                 } else{ Serial.println(F("  Error: Unexpected command received")); }
             } else{ Serial.println(F("  Error: Message is not a Command Type")); }
         } else{ Serial.println(F("  Error: Size does not match de required lenght")); }
-    } else{ Serial.println(F("  Error: No data available on the buffer")); }
+    } //else{ Serial.println(F("  Error: No data available on the buffer 5")); }
     return false;
 }
 
@@ -217,7 +220,7 @@ bool checkEndTest() {
                 } else{ Serial.println(F("  Error: Unexpected command received")); }
             } else{ Serial.println(F("  Error: Message is not a Command Type")); }
         } else{ Serial.println(F("  Error: Size does not match de required lenght")); }
-    } else{ Serial.println(F("  Error: No data available on the buffer")); }
+    } //else{ Serial.println(F("  Error: No data available on the buffer 6")); }
     return false;
 }
 
@@ -302,6 +305,7 @@ void loop() {
         break; //Fin case Init
       
     case DiagWait:
+
         CASO4;
         if(checkDiagnosticRequested()){
             currentState = Diag;
@@ -309,6 +313,7 @@ void loop() {
         break; // Fin case Diag
 
     case Diag:
+
         CASO1;
         delay(10000);
         CASO4;
@@ -321,17 +326,20 @@ void loop() {
         break;
 
     case FailDiag:
+        Serial.println("Estamos en FailDiag");
+
         Serial.println(F("Estado: FailDiag - BUCLE DE FALLO"));
         currentState = Init;
         break; // Fin case FailDiag
 
     case IgnitionWait:
+
         CASO4;
         if (checkIgnitionSignal()) {
-            armedWaitEntryTime = millis(); // Guarda el tiempo de entrada a ArmedWait
-            currentState = ArmedWait;
             resetIgniterSafeState();
             onSwitch();
+            armedWaitEntryTime = millis(); // Guarda el tiempo de entrada a ArmedWait
+            currentState = ArmedWait;
         }
         // Comprobar si ha pasado el tiempo de espera (timeout)
         else if (millis() - ignitionWaitEntryTime >= IGNITION_WAIT_TIMEOUT) {
@@ -341,6 +349,8 @@ void loop() {
         break; // Fin case IgnitionWait
 
     case ArmedWait:
+        Serial.println("Estamos en ArmedWait");
+
         CASO4;
         delay(400);
         CASO1;
@@ -355,9 +365,10 @@ void loop() {
         }
         // Comprobar si ha pasado el tiempo de espera (timeout)
         else if (millis() - armedWaitEntryTime >= ARMED_WAIT_TIMEOUT) {
-            prepareIgniter();
-            igniteMotor(); 
-            currentState = ACQ; // Pasa a ACQ si pasa el tiempo
+
+          prepareIgniter();
+          igniteMotor(); 
+          currentState = ACQ; // Pasa a ACQ si pasa el tiempo
         }
         // Si no pasa nada, sigue esperando en este estado
         break; // Fin case ArmedWait
@@ -367,6 +378,7 @@ void loop() {
       break; // Fin case ACQ
 
     case Sucess:
+
         Serial.println(F("Estado: Sucess - BUCLE DE ÉXITO"));
         CASO4;
         delay(2000);

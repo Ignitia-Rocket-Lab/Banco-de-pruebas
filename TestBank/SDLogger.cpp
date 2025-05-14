@@ -184,18 +184,18 @@ bool logMeasurement() {
 
         // Usar buffer fijo en lugar de String para eficiencia
         char logEntry[40];
-        snprintf(logEntry, sizeof(logEntry), "%lu,%.4f", elapsedTime, calculatedValue);
+        String testData = String(elapsedTime) + "," + String(calculatedValue) + "," + String(adcMeasurement) + "\n";
 
         // Enviar la cadena formateada al buffer/SD
-        if (!logToSD(logEntry)) {
+        if (!logToSD(testData)) {
              Serial.println(F("Failed to log measurement to SD buffer."));
         }
 
         // Opcional: Imprimir también al monitor serie para depuración
         Serial.print(F("Logged: ")); // Comentar si es necesario
-        Serial.println(logEntry);
+        Serial.println(testData);
 
-        if (calculatedValue < 0 && adcMeasurement < -5){
+        if (calculatedValue < 0 && adcMeasurement < -8){
             isTestRunning == false;
         }
   }

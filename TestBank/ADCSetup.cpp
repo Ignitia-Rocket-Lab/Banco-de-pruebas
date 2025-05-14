@@ -5,7 +5,7 @@
 // Constantes configurables
 const uint8_t INTERRUPT_PIN = 2;         
 const uint32_t SERIAL_BAUD_RATE = 115200;
-const uint8_t OFFSET = 28; //Valor necesario para estabilizar la medicion en 0 (antes 43)
+const uint8_t OFFSET = 33; //Valor necesario para estabilizar la medicion en 0 (antes 43)
 
 // constructor del ADS115 en el bus I2C con address 0x48 (Pin ADDR -> GND)
 extern ADS1115 ADS(0x48);

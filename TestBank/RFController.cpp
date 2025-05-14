@@ -108,6 +108,16 @@ bool isDataAvailable() {
     return rf24_data_available_flag;
 }
 
+//*void sendACK() {
+  // Este es un ejemplo de cómo puedes enviar un mensaje de "ACK"
+ // const char ackMessage[] = "ACK recibido";
+  //radio.stopListening();  // Detiene la escucha para enviar el mensaje
+  //radio.write(&ackMessage, sizeof(ackMessage));  // Envía el mensaje
+  //radio.startListening();  // Vuelve a escuchar
+  
+  //Serial.println("ACK enviado");
+//} 
+
 /**
  * @brief Lee los datos recibidos y los guarda en el buffer global payload.
  *        Reinicia la bandera de datos disponibles.

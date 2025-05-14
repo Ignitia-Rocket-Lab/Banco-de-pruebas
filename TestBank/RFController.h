@@ -47,7 +47,8 @@ enum FsmState : uint8_t {
   STATE_ARMED_WAIT    = 4, // Valor numérico de ArmedWait
   STATE_IGNITION      = 5, // Valor numérico de Ignition
 
-  STATE_SUCESS        = 6  // Valor numérico de Sucess
+  STATE_SUCESS        = 6,  // Valor numérico de Sucess
+  STATE_END           = 7  // Valor numérico de Sucess
 };
 
 // --- Subtipos para DATA_REPORT (Segundo Byte si MSG_TYPE es DATA_REPORT) ---
@@ -102,6 +103,7 @@ bool sendDataRF24(const void* data, uint8_t len);
  * @return True si la bandera rf24_data_available_flag está activa, False si no.
  */
 bool isDataAvailable();
+//void sendACK();
 
 /**
  * @brief Lee los datos recibidos y los guarda en el buffer global payload.
