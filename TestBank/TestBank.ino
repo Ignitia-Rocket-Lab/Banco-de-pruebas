@@ -242,33 +242,41 @@ bool checkEndSignal() {
 }
 
 void performAcquisition() {
-    Serial.println(F("  Realizando Adquisición (ACQ)..."));
-    // Inicialización
-    startTime = millis();
-    isTestRunning = true;
+  Serial.println(F("  Realizando Adquisición (ACQ)..."));
+  // Inicialización
+  startTime = millis();
+  isTestRunning = true;
 
-    // Estadísticas
-    uint32_t successCount = 0;
-    uint32_t failCount = 0;
+  // Estadísticas
+  uint32_t successCount = 0;
+  uint32_t failCount = 0;
 
-    // Bucle principal de adquisición
-    while (isTestRunning) {
-        // Espera activa con interrupción del ADC
-        if (handleConversion()) {
-            if (logMeasurement()) {
-            successCount++;
-            } else {
-            failCount++;
-            }
-        }
+  // Bucle principal de adquisición
+  while (isTestRunning) {
+    // Comprobar si se recibe la señal de Success ANTES de tomar la muestra
+    if (checkSuccessSignal()) {
+      isTestRunning = false; // Detener la adquisición
+      currentState = Success; // Pasar al estado Success
+      Serial.println(F("  Comando Success recibido. Deteniendo adquisición."));
+      break; // Salir del bucle de adquisición
     }
 
-    // Reporte final
-    Serial.println(F(">> Adquisición finalizada."));
-    Serial.print(F("Lecturas exitosas: "));
-    Serial.println(successCount);
-    Serial.print(F("Lecturas fallidas: "));
-    Serial.println(failCount);
+    // Espera activa con interrupción del ADC
+    if (handleConversion()) {
+      if (logMeasurement()) {
+        successCount++;
+      } else {
+        failCount++;
+      }
+    }
+  }
+
+  // Reporte final
+  Serial.println(F(">> Adquisición finalizada."));
+  Serial.print(F("Lecturas exitosas: "));
+  Serial.println(successCount);
+  Serial.print(F("Lecturas fallidas: "));
+  Serial.println(failCount);
 }
 
 // --- Configuración Inicial ---
@@ -391,13 +399,7 @@ void loop() {
         break; // Fin case ArmedWait
 
     case ACQ:
-      if (checkSuccessSignal()) {
-              ignitionWaitEntryTime = millis(); // Reinicia timer de IgnitionWait al volver
-              currentState = Success;
-          }
-      else {
-        performAcquisition(); // Ejecuta la lógica de adquisición
-      }
+      performAcquisition();
       break; // Fin case ACQ
 
     case Success:
@@ -424,7 +426,7 @@ void loop() {
 
     case End:
         resetIgniterSafeState();
-        CASO1;
+        CASO1; // Leds
         closeSD();
         break;
 

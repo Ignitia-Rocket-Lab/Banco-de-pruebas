@@ -47,7 +47,7 @@ enum FsmState : uint8_t {
   STATE_ARMED_WAIT    = 4, // Valor numérico de ArmedWait
   STATE_IGNITION      = 5, // Valor numérico de Ignition
 
-  STATE_SUCESS        = 6,  // Valor numérico de Sucess
+  STATE_SUCCESS        = 6,  // Valor numérico de Sucess
   STATE_END           = 7  // Valor numérico de Sucess
 };
 
