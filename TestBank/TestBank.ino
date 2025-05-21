@@ -262,7 +262,7 @@ void performAcquisition() {
     }
 
     // Espera activa con interrupción del ADC
-    if (handleConversion()) {
+    if (handleConversion() && adcMeasurement>10) {
       if (logMeasurement()) {
         successCount++;
       } else {
