@@ -386,6 +386,7 @@ void loop() {
         // Comprobar si se recibe la señal de abortar
         if (checkAbortSignal()) {
             ignitionWaitEntryTime = millis(); // Reinicia timer de IgnitionWait al volver
+            resetIgniterSafeState();
             currentState = IgnitionWait;
         }
         // Comprobar si ha pasado el tiempo de espera (timeout)
@@ -404,8 +405,7 @@ void loop() {
 
     case Success:
 
-        Serial.println(F("Estado: Sucess - BUCLE DE ÉXITO"));
-        CASO4;
+        /*CASO4;
         delay(2000);
         CASO1;
         delay(2000);
@@ -415,7 +415,7 @@ void loop() {
         delay(2000);
         CASO4;
         delay(2000);
-        CASO1;   
+        CASO1;  */ 
 
         if (checkEndSignal()) {
             currentState = End;
@@ -428,6 +428,7 @@ void loop() {
         resetIgniterSafeState();
         CASO1; // Leds
         closeSD();
+        delay(2000);
         break;
 
     default:
