@@ -262,7 +262,7 @@ void performAcquisition() {
     }
 
     // Espera activa con interrupción del ADC
-    if (handleConversion() && adcMeasurement>10) {
+    if (handleConversion()) {//"&& adcMeasurement>10" corregir treshold 
       if (logMeasurement()) {
         successCount++;
       } else {
