@@ -144,7 +144,7 @@ bool logToSD(const String& data) {
     }
     
     // Convertir el dato a un arreglo de caracteres y añadirlo al buffer
-    String dataWithNewline = data + "\n";
+    String dataWithNewline = data ; //+ "\n"
     dataWithNewline.toCharArray(logBuffer + bufferIndex, dataWithNewline.length() + 1);
     
     // Actualizar el índice del buffer
@@ -173,7 +173,7 @@ bool logToSD(const String& data) {
  * @note Esta función depende de las variables globales `isTestRunning`, `startTime`,
  *       `adcMeasurement` y la macro `WEIGHT` definidas externamente (probablemente en ADCSetup).
  */
-bool logMeasurement() {
+bool logMeasurement(bool ignition_state) {
     // Solo registrar si la bandera isTestRunning (del módulo ADC) está activa
     if (isTestRunning) {
         // Calcular el tiempo transcurrido desde el inicio de la prueba
@@ -184,7 +184,7 @@ bool logMeasurement() {
 
         // Usar buffer fijo en lugar de String para eficiencia
         char logEntry[40];
-        String testData = String(elapsedTime) + "," + String(calculatedValue) + "," + String(adcMeasurement) + "\n";
+        String testData = String(elapsedTime) + "," + String(calculatedValue) + "," + String(adcMeasurement) + "," + String(ignition_state) + "\n";
 
         // Enviar la cadena formateada al buffer/SD
         if (!logToSD(testData)) {

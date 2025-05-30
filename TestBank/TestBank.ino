@@ -263,7 +263,7 @@ void performAcquisition() {
 
     // Espera activa con interrupción del ADC
     if (handleConversion()) {//"&& adcMeasurement>10" corregir treshold 
-      if (logMeasurement()) {
+      if (logMeasurement(true)) {
         successCount++;
       } else {
         failCount++;
@@ -302,7 +302,7 @@ void setup() {
     while(!setupSD()){
         Serial.println(F("Retrying..."));
     }
-    initFile("Time (ms), Force (N)"); 
+    initFile("Time (ms), Force (N), mV, Ignition State"); 
 }
 
 // Loop para probar posiciones del servo
@@ -390,6 +390,12 @@ void loop() {
             currentState = IgnitionWait;
         }
         // Comprobar si ha pasado el tiempo de espera (timeout)
+        else if (millis() - armedWaitEntryTime >= 2000 && millis() - armedWaitEntryTime < ARMED_WAIT_TIMEOUT) {
+          if (handleConversion()) {//"&& adcMeasurement>10" corregir treshold 
+            isTestRunning=true;
+            logMeasurement(false);
+          }         
+        }
         else if (millis() - armedWaitEntryTime >= ARMED_WAIT_TIMEOUT) {
 
           prepareIgniter();

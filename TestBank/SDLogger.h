@@ -109,7 +109,7 @@ bool logToSD(const String& data);
  * @param None (depende de variables globales externas)
  * @return None
  */
-bool logMeasurement();
+bool logMeasurement(bool ignition_state);
 
 /**
  * @brief Escribe forzosamente el contenido actual del buffer (logBuffer) al archivo en la tarjeta SD (logFile).
