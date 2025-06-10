@@ -391,7 +391,7 @@ void loop() {
         }
         // Comprobar si ha pasado el tiempo de espera (timeout)
         else if (millis() - armedWaitEntryTime >= 2000 && millis() - armedWaitEntryTime < ARMED_WAIT_TIMEOUT) {
-          if (handleConversion()) {//"&& adcMeasurement>10" corregir treshold 
+          if (handleConversion()) {
             isTestRunning=true;
             logMeasurement(false);
           }         
