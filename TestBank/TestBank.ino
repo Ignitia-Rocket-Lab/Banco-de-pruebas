@@ -410,19 +410,7 @@ void loop() {
       break; // Fin case ACQ
 
     case Success:
-
-        /*CASO4;
-        delay(2000);
-        CASO1;
-        delay(2000);
-        CASO4;
-        delay(2000);
-        CASO1;
-        delay(2000);
-        CASO4;
-        delay(2000);
-        CASO1;  */ 
-
+    
         if (checkEndSignal()) {
             currentState = End;
         }
