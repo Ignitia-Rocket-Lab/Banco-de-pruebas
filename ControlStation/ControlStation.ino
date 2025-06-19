@@ -47,13 +47,13 @@ void sendCommand(int command) {
       commandToSend = CMD_GOTO_DIAG_WAIT;
       break;
     case 1:
-      commandToSend = CMD_GOTO_ARMED;
+      commandToSend = CMD_REQUEST_DIAGNOSTICS;
       break;
     case 2:
-      commandToSend = CMD_ABORT;
+      commandToSend = CMD_GOTO_ARMED;
       break;
     case 3:
-      commandToSend = CMD_REQUEST_DIAGNOSTICS;
+      commandToSend = CMD_ABORT;
       break;
     case 4: 
       commandToSend = CMD_SUCCESS;
@@ -80,9 +80,9 @@ void sendCommand(int command) {
 void printCommandMenu() {
   Serial.println(F("--- Command Menu ---"));
   Serial.println(F("0: Go to DIAG WAIT"));
-  Serial.println(F("1: Go to ARMED"));
-  Serial.println(F("2: ABORT"));
-  Serial.println(F("3: Request DIAGNOSTICS"));
+  Serial.println(F("1: Request DIAGNOSTICS"));
+  Serial.println(F("2: Go to ARMED WAIT"));
+  Serial.println(F("3: Abort"));
   Serial.println(F("4: End TestBank ACQ"));
   Serial.println(F("5: END"));
   Serial.print(F("Enter command number: "));
