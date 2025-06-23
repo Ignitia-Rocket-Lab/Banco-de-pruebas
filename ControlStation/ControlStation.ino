@@ -6,6 +6,11 @@ bool waitingForResponse = false; // Bandera para indicar si estamos esperando un
 unsigned long responseTimeout = 0;  // Tiempo límite para la respuesta (en milisegundos)
 const unsigned long RESPONSE_TIMEOUT_MS = 10000; // Por ejemplo, 10 segundos de timeout
 
+// botones
+const int botones[6] = {2, 4, 5, 6, 7, 8};
+bool estadoAnterior[6] = {HIGH, HIGH, HIGH, HIGH, HIGH, HIGH};
+
+
 // --- Configuración Inicial ---
 void setup() {
   Serial.begin(115200);
@@ -17,25 +22,40 @@ void setup() {
     delay(1000);
   }
   Serial.println(F("RF24 setup complete."));
+  
   printCommandMenu(); // Vuelve a imprimir el menú
+
+  // Configura los pines de los botones como entrada con resistencia pull-up interna
+  for (int i = 0; i < 6; i++) {
+    pinMode(botones[i], INPUT_PULLUP);
+  }
+
+  
 }
 
 void loop() {
   
-  if (Serial.available() > 0) {
-    int command = Serial.parseInt();
-    sendCommand(command);
-      // Manejar la recepción de mensajes y el timeout
-    /*if (isDataAvailable()) {
-      payload_Size = readDataSimpleRF24();
-      processReceivedMessage(payload, payload_Size);
-      waitingForResponse = false; // Ya no estamos esperando
-    } else if (waitingForResponse && millis() - responseTimeout > RESPONSE_TIMEOUT_MS) {
-      Serial.println(F("Response Timeout! No response received."));
-      waitingForResponse = false; // Se acabó el tiempo de espera
-    }*/
-      Serial.println();
+  for (int i = 0; i < 6; i++) {
+    int estado = digitalRead(botones[i]);
+
+    if (estado == LOW && estadoAnterior[i] == HIGH) {
+      estadoAnterior[i] = LOW;
+
+      char mensaje[12];
+      sprintf(mensaje, "BOTON_%d", i);
+
+      Serial.print("Enviado: ");
+      Serial.println(mensaje);
+
+      sendCommand(i);  // <- Aquí envías el número del botón presionado
+      delay(200); // Antirebote
     }
+
+    if (estado == HIGH) {
+      estadoAnterior[i] = HIGH;
+    }
+  }
+  
 }
 
 void sendCommand(int command) {

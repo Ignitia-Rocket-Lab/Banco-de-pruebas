@@ -4,10 +4,11 @@
 #include <Arduino.h>
 #include <SPI.h>
 #include <RF24.h>
+#include <nRF24L01.h>
 
 // --- Configuración de Pines ---
-#define CE_PIN  7
-#define CSN_PIN 8
+#define CE_PIN  9
+#define CSN_PIN 10
 
 // Define el pin al que se conecta el pin IRQ de la antena
 // Considerar un pin con capacidad de interrupción (p. ej., 2 o 3 en Arduino UNO/Nano)
@@ -74,6 +75,7 @@ enum CommandCode : uint8_t {
 extern volatile bool rf24_data_available_flag;
 extern uint8_t payload[RF24_MAX_PAYLOAD_SIZE];
 extern uint8_t payload_size;
+
 
 
 // --- Prototipos de Funciones del Driver ---

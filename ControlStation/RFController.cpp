@@ -5,6 +5,8 @@
 // Define las direcciones concretas
 const byte rf24_addresses[2][6] = {"TBdir", "TRdir"};
 
+
+
 // Crea la instancia del objeto RF24
 RF24 radio(CE_PIN, CSN_PIN);
 
