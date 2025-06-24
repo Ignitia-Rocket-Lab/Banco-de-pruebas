@@ -5,6 +5,8 @@
 #include <SPI.h>
 #include <RF24.h>
 #include <nRF24L01.h>
+#include <Wire.h>
+#include <LiquidCrystal_I2C.h>
 
 // --- Configuración de Pines ---
 #define CE_PIN  9
